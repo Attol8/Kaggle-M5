@@ -66,6 +66,8 @@ def generate_feature(feature_name):
     train = pd.read_feather(settings.TRAIN_DATA)
     test = pd.read_feather(settings.TEST_DATA)
     trn_tst = train.append(test)
+
+    del train, test; gc.collect()
     #train_df = pd.read_csv('../input/m5-forecasting-accuracy/sales_train_validation.csv')
     prices_df = pd.read_csv(settings.PRICES_DATA, dtype=PRICE_DTYPES)
     calendar_df = pd.read_csv(settings.CALENDAR_DATA, dtype =CAL_DTYPES)
