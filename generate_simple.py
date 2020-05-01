@@ -6,7 +6,6 @@ import logging
 import os, sys, gc, time, warnings, pickle, psutil, random
 from math import ceil
 
-
 def reduce_mem_usage(df, verbose=True):
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     start_mem = df.memory_usage().sum() / 1024**2    
@@ -60,12 +59,16 @@ def generate_feature(feature_name):
     # without any limitations and dtype modification
 
     print('Load Main Data')
+    CAL_DTYPES={"event_name_1": "category", "event_name_2": "category", "event_type_1": "category", 
+    "event_type_2": "category", "weekday": "category", 'wm_yr_wk': 'int16', "wday": "int16",
+    "month": "int16", "year": "int16", "snap_CA": "float32", 'snap_TX': 'float32', 'snap_WI': 'float32' }
+    PRICE_DTYPES = {"store_id": "category", "item_id": "category", "wm_yr_wk": "int16","sell_price":"float32" }
     train = pd.read_feather(settings.TRAIN_DATA)
     test = pd.read_feather(settings.TEST_DATA)
     trn_tst = train.append(test)
     #train_df = pd.read_csv('../input/m5-forecasting-accuracy/sales_train_validation.csv')
-    prices_df = pd.read_csv(settings.PRICES_DATA)
-    calendar_df = pd.read_csv(settings.CALENDAR_DATA)
+    prices_df = pd.read_csv(settings.PRICES_DATA, dtype=PRICE_DTYPES)
+    calendar_df = pd.read_csv(settings.CALENDAR_DATA, dtype =CAL_DTYPES)
 
     ########################### Vars
     #################################################################################
