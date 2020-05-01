@@ -1,4 +1,5 @@
-output/
+output/feature/
+output/model/
 output2/
 tempCodeRunnerFile.py
 input_data/

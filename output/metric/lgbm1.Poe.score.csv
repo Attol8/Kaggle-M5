@@ -1,0 +1,2 @@
+,date and time,model_name,feature_name,train_file,metric used,CV score,submission
+0,01/05/2020 14:32:07,lgbm1,Poe,Poe.trn.feather,rmse,1.9475013648212625,lgbm1.Poe.sub.csv
