@@ -46,11 +46,10 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 ## Merging by concat to not lose dtypes
-def merge_by_concat(df1, df2, merge_on):
+def merge_by_concat(df1, df2, merge_on, release= True):
     merged_gf = df1[merge_on]
     merged_gf = merged_gf.merge(df2, on=merge_on, how='left')
     new_columns = [col for col in list(merged_gf) if col not in merge_on]
-    print(new_columns)
     df1 = pd.concat([df1, merged_gf[new_columns]], axis=1)
     return df1
 
@@ -62,12 +61,15 @@ def generate_feature(feature_name):
     print('Load Main Data')
     CAL_DTYPES={"event_name_1": "category", "event_name_2": "category", "event_type_1": "category", 
     "event_type_2": "category", "weekday": "category", 'wm_yr_wk': 'int16', "wday": "int16",
-    "month": "int16", "year": "int16", "snap_CA": "float32", 'snap_TX': 'float32', 'snap_WI': 'float32', 'd' : 'int16' }
+    "month": "int16", "year": "int16", "snap_CA": "float32", 'snap_TX': 'float32', 'snap_WI': 'float32'}
     PRICE_DTYPES = {"store_id": "category", "item_id": "category", "wm_yr_wk": "int16","sell_price":"float32" }
     train = pd.read_feather(settings.TRAIN_DATA)
     test = pd.read_feather(settings.TEST_DATA)
     trn_tst = train.append(test)[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd',
     'sales']]
+    trn_tst['d'] = 'd_' + trn_tst['d'].astype(str)
+    train_len = len(train)
+    test_len = len(test)
 
     del train
     del test
@@ -77,7 +79,19 @@ def generate_feature(feature_name):
     prices_df = pd.read_csv(settings.PRICES_DATA, dtype=PRICE_DTYPES)
     calendar_df = pd.read_csv(settings.CALENDAR_DATA, dtype =CAL_DTYPES)
     trn_tst = trn_tst.reset_index(drop=True)
-    print(trn_tst.shape)
+
+    #change data types 
+    for col, col_dtype in PRICE_DTYPES.items():
+        if col_dtype == "category":
+            prices_df[col] = prices_df[col].cat.codes.astype("int16")
+            prices_df[col] -= prices_df[col].min()
+            
+    calendar_df["date"] = pd.to_datetime(calendar_df["date"])
+    for col, col_dtype in CAL_DTYPES.items():
+        if col_dtype == "category":
+            calendar_df[col] = calendar_df[col].cat.codes.astype("int16")
+            calendar_df[col] -= calendar_df[col].min()
+
     ########################### Vars
     #################################################################################
     TARGET = 'sales'         # Our main target
@@ -109,15 +123,17 @@ def generate_feature(feature_name):
     # to do it we need wm_yr_wk column
     # let's merge partly calendar_df to have it
     trn_tst = merge_by_concat(trn_tst, calendar_df[['wm_yr_wk','d']], ['d'])
+    print(trn_tst.shape)
     print('making release')                    
     # Now we can cutoff some rows 
     # and safe memory 
-    trn_tst = trn_tst[trn_tst['wm_yr_wk']>=trn_tst['release']]
+    #trn_tst = trn_tst[trn_tst['wm_yr_wk']>=trn_tst['release']]
     trn_tst = trn_tst.reset_index(drop=True)
 
     # Let's check our memory usage
     print("{:>20}: {:>8}".format('Original trn_tst',sizeof_fmt(trn_tst.memory_usage(index=True).sum())))
-
+    print(trn_tst.shape)
+    print(trn_tst.columns)
     # Should we keep release week 
     # as one of the features?
     # Only good CV can give the answer.
@@ -127,7 +143,8 @@ def generate_feature(feature_name):
     # and our trn_tst['release'].max() serves for int16
     # but we have have an idea how to transform 
     # other columns in case we will need it
-    trn_tst['release'] = trn_tst['release'] - trn_tst['release'].min()
+    #trn_tst['release'] = trn_tst['release'] - trn_tst['release'].min()
+    #print(trn_tst.isna().sum())
     trn_tst['release'] = trn_tst['release'].astype(np.int16)
 
     # Let's check again memory usage
@@ -175,20 +192,20 @@ def generate_feature(feature_name):
     # Merge Prices
     original_columns = list(trn_tst)
     trn_tst = trn_tst.merge(prices_df, on=['store_id','item_id','wm_yr_wk'], how='left')
-    keep_columns = [col for col in list(trn_tst) if col not in original_columns]
-    trn_tst = trn_tst[MAIN_INDEX+keep_columns]
+    #keep_columns = [col for col in list(trn_tst) if col not in original_columns]
+    #trn_tst = trn_tst[MAIN_INDEX+keep_columns]
     trn_tst = reduce_mem_usage(trn_tst)
 
     # Safe part 2
-    trn_tst.to_pickle('grid_part_2.pkl')
-    print('Size:', trn_tst.shape)
+    #trn_tst.to_pickle('grid_part_2.pkl')
+    #print('Size:', trn_tst.shape)
 
     # We don't need prices_df anymore
     del prices_df
 
     ########################### Merge calendar
     #################################################################################
-    trn_tst = trn_tst[MAIN_INDEX]
+    #trn_tst = trn_tst[MAIN_INDEX]
 
     # Merge calendar partly
     icols = ['date',
@@ -237,53 +254,37 @@ def generate_feature(feature_name):
     print('Save part 3')
 
     # Safe part 3
-    trn_tst.to_pickle('grid_part_3.pkl')
-    print('Size:', trn_tst.shape)
+    #trn_tst.to_pickle('grid_part_3.pkl')
+    #print('Size:', trn_tst.shape)
 
     # We don't need calendar_df anymore
     del calendar_df
-    del trn_tst
 
     ########################### Some additional cleaning
     #################################################################################
 
     ## Part 1
     # Convert 'd' to int
-    trn_tst = pd.read_pickle('grid_part_1.pkl')
+    #trn_tst = pd.read_pickle('grid_part_1.pkl')
     trn_tst['d'] = trn_tst['d'].apply(lambda x: x[2:]).astype(np.int16)
 
     # Remove 'wm_yr_wk'
     # as test values are not in train set
-    del trn_tst['wm_yr_wk']
-    trn_tst.to_pickle('grid_part_1.pkl')
-
-    del trn_tst
+    #del trn_tst['wm_yr_wk']
+    #trn_tst.to_pickle('grid_part_1.pkl')
 
     ########################### Summary
     #################################################################################
 
     # Now we have 3 sets of features
-    trn_tst = pd.concat([pd.read_pickle('grid_part_1.pkl'),
-                        pd.read_pickle('grid_part_2.pkl').iloc[:,2:],
-                        pd.read_pickle('grid_part_3.pkl').iloc[:,2:]],
-                        axis=1)
+    # trn_tst = pd.concat([pd.read_pickle('grid_part_1.pkl'),
+    #                     pd.read_pickle('grid_part_2.pkl').iloc[:,2:],
+    #                     pd.read_pickle('grid_part_3.pkl').iloc[:,2:]],
+    #                     axis=1)
                         
     # Let's check again memory usage
     print("{:>20}: {:>8}".format('Full Grid',sizeof_fmt(trn_tst.memory_usage(index=True).sum())))
     print('Size:', trn_tst.shape)
-
-    # 2.5GiB + is is still too big to train our model
-    # (on kaggle with its memory limits)
-    # and we don't have lag features yet
-    # But what if we can train by state_id or shop_id?
-    state_id = 'CA'
-    trn_tst = trn_tst[trn_tst['state_id']==state_id]
-    print("{:>20}: {:>8}".format('Full Grid',sizeof_fmt(trn_tst.memory_usage(index=True).sum())))
-    #           Full Grid:   1.2GiB
-
-    store_id = 'CA_1'
-    trn_tst = trn_tst[trn_tst['store_id']==store_id]
-    print("{:>20}: {:>8}".format('Full Grid',sizeof_fmt(trn_tst.memory_usage(index=True).sum())))   
     
     ########################### Final list of features
     #################################################################################
@@ -294,8 +295,8 @@ def generate_feature(feature_name):
             f.write('{}\t{}\tq\n'.format(i, col))
 
     logging.info('saving features')
-    trn_tst[:len(train)].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
-    trn_tst[len(train):].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
+    trn_tst[:train_len].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
+    trn_tst[train_len:].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
 if __name__ == "__main__":
     generate_feature(feature_name = "simple" )
