@@ -263,7 +263,7 @@ def generate_feature(feature_name):
 
     logging.info('saving features')
     trn_tst = trn_tst.astype('float32', errors='ignore')
-    trn_tst = trn_tst.reset_index(drop=True)
+    trn_tst.reset_index(inplace=True)
 
     #save to feathers
     trn_tst[:train_len].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
