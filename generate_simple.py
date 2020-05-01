@@ -75,7 +75,7 @@ def generate_feature(feature_name):
     #train_df = pd.read_csv('../input/m5-forecasting-accuracy/sales_train_validation.csv')
     prices_df = pd.read_csv(settings.PRICES_DATA, dtype=PRICE_DTYPES)
     calendar_df = pd.read_csv(settings.CALENDAR_DATA, dtype =CAL_DTYPES)
-
+    print(trn_tst.shape)
     ########################### Vars
     #################################################################################
     TARGET = 'sales'         # Our main target
