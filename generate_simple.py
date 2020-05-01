@@ -107,7 +107,7 @@ def generate_feature(feature_name):
     # to do it we need wm_yr_wk column
     # let's merge partly calendar_df to have it
     trn_tst = merge_by_concat(trn_tst, calendar_df[['wm_yr_wk','d']], ['d'])
-                        
+    print('making release')                    
     # Now we can cutoff some rows 
     # and safe memory 
     trn_tst = trn_tst[trn_tst['wm_yr_wk']>=trn_tst['release']]
