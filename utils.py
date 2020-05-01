@@ -12,7 +12,10 @@ def make_out_directories(output_path = settings.OUTPUT_DIR):
         os.mkdir(output_path)
         dir_l = ['feature', 'metric', 'model', 'val', 'tst', 'submission']
         for dir in dir_l:
-            os.mkdir(os.path.join(output_path, dir))
+            if os.path.exists(os.path.join(output_path, dir)):
+                pass
+            else:
+                os.mkdir(os.path.join(output_path, dir))
 
 def make_test_train():
     #categories' types
