@@ -68,8 +68,7 @@ def generate_feature(feature_name):
     trn_tst = train.append(test)[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd',
     'sales']]
     trn_tst['d'] = 'd_' + trn_tst['d'].astype(str)
-    train_len = len(train)
-    test_len = len(test)
+    train_len = len(train) #we need it as we are going to delete train set for memory reason
 
     del train
     del test
@@ -91,12 +90,6 @@ def generate_feature(feature_name):
         if col_dtype == "category":
             calendar_df[col] = calendar_df[col].cat.codes.astype("int16")
             calendar_df[col] -= calendar_df[col].min()
-
-    ########################### Vars
-    #################################################################################
-    TARGET = 'sales'         # Our main target
-    END_TRAIN = 1913         # Last day in train set
-    MAIN_INDEX = ['id','d']  # We can identify item by these columns
 
     ########################### Product Release date
     #################################################################################
@@ -123,7 +116,6 @@ def generate_feature(feature_name):
     # to do it we need wm_yr_wk column
     # let's merge partly calendar_df to have it
     trn_tst = merge_by_concat(trn_tst, calendar_df[['wm_yr_wk','d']], ['d'])
-    print(trn_tst.shape)
     print('making release')                    
     # Now we can cutoff some rows 
     # and safe memory 
@@ -132,8 +124,7 @@ def generate_feature(feature_name):
 
     # Let's check our memory usage
     print("{:>20}: {:>8}".format('Original trn_tst',sizeof_fmt(trn_tst.memory_usage(index=True).sum())))
-    print(trn_tst.shape)
-    print(trn_tst.columns)
+
     # Should we keep release week 
     # as one of the features?
     # Only good CV can give the answer.
@@ -295,6 +286,7 @@ def generate_feature(feature_name):
             f.write('{}\t{}\tq\n'.format(i, col))
 
     logging.info('saving features')
+    trn_tst = trn_tst.astype('float32', errors='ignore')
     trn_tst[:train_len].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
     trn_tst[train_len:].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
