@@ -66,7 +66,8 @@ def generate_feature(feature_name):
     PRICE_DTYPES = {"store_id": "category", "item_id": "category", "wm_yr_wk": "int16","sell_price":"float32" }
     train = pd.read_feather(settings.TRAIN_DATA)
     test = pd.read_feather(settings.TEST_DATA)
-    trn_tst = train.append(test)
+    trn_tst = train.append(test)[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd',
+    'sales']]
 
     del train
     del test
