@@ -50,6 +50,7 @@ def merge_by_concat(df1, df2, merge_on):
     merged_gf = df1[merge_on]
     merged_gf = merged_gf.merge(df2, on=merge_on, how='left')
     new_columns = [col for col in list(merged_gf) if col not in merge_on]
+    print(new_columns)
     df1 = pd.concat([df1, merged_gf[new_columns]], axis=1)
     return df1
 
@@ -67,7 +68,10 @@ def generate_feature(feature_name):
     test = pd.read_feather(settings.TEST_DATA)
     trn_tst = train.append(test)
 
-    del train, test; gc.collect()
+    del train
+    del test
+    gc.collect()
+
     #train_df = pd.read_csv('../input/m5-forecasting-accuracy/sales_train_validation.csv')
     prices_df = pd.read_csv(settings.PRICES_DATA, dtype=PRICE_DTYPES)
     calendar_df = pd.read_csv(settings.CALENDAR_DATA, dtype =CAL_DTYPES)
