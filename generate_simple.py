@@ -240,38 +240,14 @@ def generate_feature(feature_name):
     # Remove date
     del trn_tst['date']
 
-    ########################### Save part 3 (Dates)
-    #################################################################################
-    print('Save part 3')
-
-    # Safe part 3
-    #trn_tst.to_pickle('grid_part_3.pkl')
-    #print('Size:', trn_tst.shape)
-
     # We don't need calendar_df anymore
     del calendar_df
 
-    ########################### Some additional cleaning
-    #################################################################################
-
-    ## Part 1
     # Convert 'd' to int
-    #trn_tst = pd.read_pickle('grid_part_1.pkl')
     trn_tst['d'] = trn_tst['d'].apply(lambda x: x[2:]).astype(np.int16)
-
-    # Remove 'wm_yr_wk'
-    # as test values are not in train set
-    #del trn_tst['wm_yr_wk']
-    #trn_tst.to_pickle('grid_part_1.pkl')
 
     ########################### Summary
     #################################################################################
-
-    # Now we have 3 sets of features
-    # trn_tst = pd.concat([pd.read_pickle('grid_part_1.pkl'),
-    #                     pd.read_pickle('grid_part_2.pkl').iloc[:,2:],
-    #                     pd.read_pickle('grid_part_3.pkl').iloc[:,2:]],
-    #                     axis=1)
                         
     # Let's check again memory usage
     print("{:>20}: {:>8}".format('Full Grid',sizeof_fmt(trn_tst.memory_usage(index=True).sum())))
@@ -287,6 +263,9 @@ def generate_feature(feature_name):
 
     logging.info('saving features')
     trn_tst = trn_tst.astype('float32', errors='ignore')
+    trn_tst = trn_tst.reset_index(drop=True)
+
+    #save to feathers
     trn_tst[:train_len].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
     trn_tst[train_len:].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
