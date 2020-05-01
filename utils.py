@@ -10,11 +10,11 @@ def make_out_directories(output_path = settings.OUTPUT_DIR):
     else:
         print('Making Directories')
         os.mkdir(output_path)
-        
+
     dir_l = ['feature', 'metric', 'model', 'val', 'tst', 'submission']
     for dir in dir_l:
         if os.path.exists(os.path.join(output_path, dir)):
-            pass
+            print(os.path.join(output_path, dir) + ' : exists')
         else:
             os.mkdir(os.path.join(output_path, dir))
 
