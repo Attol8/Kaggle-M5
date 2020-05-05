@@ -95,6 +95,7 @@ def reduce_mem_usage(props):
     start_mem_usg = props.memory_usage().sum() / 1024**2 
     print("Memory usage of properties dataframe is :",start_mem_usg," MB")
     NAlist = [] # Keeps track of columns that have missing values filled in. 
+    print(props.columns)
     for col in props.columns:
         if props[col].dtype != object:  # Exclude strings
             
