@@ -69,6 +69,7 @@ def generate_feature(feature_name):
     'sales']]
     trn_tst['d'] = 'd_' + trn_tst['d'].astype(str)
     train_len = len(train) #we need it as we are going to delete train set for memory reason
+    print(len(trn_tst))
 
     del train
     del test
@@ -263,11 +264,10 @@ def generate_feature(feature_name):
 
     logging.info('saving features')
     trn_tst = trn_tst.astype('float32', errors='ignore')
-    trn_tst.reset_index(inplace=True)
-
+    
+    trn_tst = trn_tst.reset_index(drop=True)
     #save to feathers
     trn_tst[:train_len].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
-    trn_tst.reset_index(inplace=True)
     trn_tst[train_len:].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
 if __name__ == "__main__":
