@@ -63,8 +63,12 @@ def predict(feature_name, model_name):
     print('inititaitng prediction dataframe...')
     all_preds = pd.DataFrame() # Create Dummy DataFrame to store predictions
 
-    #load test set
-    X_tst = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
+    #load initial train set
+    test_Poe = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('Poe')))
+    test_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('simple')))
+    X_tst = pd.concat(test_Poe, test_simple, axis=1)
+    del test_Poe
+    del test_simple
 
     last_day = datetime.date(2016, 4, 24)
     main_time = time.time()
@@ -125,7 +129,7 @@ if __name__ == "__main__":
                     'boost_from_average': False,
                     'verbose': -1,
                 }
-    #train(feature_name, model_name, lgb_params)
+    train(feature_name, model_name, lgb_params)
     predict(feature_name, model_name)
     
 
