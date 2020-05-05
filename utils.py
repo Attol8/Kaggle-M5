@@ -97,7 +97,7 @@ def reduce_mem_usage(props):
     NAlist = [] # Keeps track of columns that have missing values filled in.
     for col in props.columns:
         print(props[col][:5])
-        if props[col].dtype != object or props[col].dtype != 'datetime64[ns]':  # Exclude strings
+        if props[col].dtype not in [object,'datetime64[ns]']:  # Exclude strings
             
             # Print current column type
             print("******************************")
