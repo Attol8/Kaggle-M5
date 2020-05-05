@@ -36,7 +36,7 @@ def train(feature_name, model_name, lgb_params):
     
     X_train, y_train = train_df[features_columns], train_df['sales']
     X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
-    del train_df
+    del train_df; gc.collect()
 
     train_data = lgb.Dataset(X_train, label= y_train, categorical_feature=cat_feats, free_raw_data=False)
     valid_data = lgb.Dataset(X_valid, label= y_valid, categorical_feature=cat_feats, free_raw_data=False)
