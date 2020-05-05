@@ -36,6 +36,7 @@ def train(feature_name, model_name, lgb_params):
     
     X_train, y_train = train_df[features_columns], train_df['sales']
     X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
+    del train_df
 
     train_data = lgb.Dataset(X_train, label= y_train, categorical_feature=cat_feats, free_raw_data=False)
     valid_data = lgb.Dataset(X_valid, label= y_valid, categorical_feature=cat_feats, free_raw_data=False)
@@ -54,7 +55,7 @@ def train(feature_name, model_name, lgb_params):
 
     #save validation metrics
     print('Saving Validation Score...')
-    y_pred = estimator.predict(train_df[valid_mask][features_columns])
+    y_pred = estimator.predict(X_valid[features_columns])
     rmse = sqrt(mean_squared_error(y_valid, y_pred)) #change metrics according to the one you use
     save_score(model_name, feature_name, params= lgb_params, CV_score=rmse)
 
