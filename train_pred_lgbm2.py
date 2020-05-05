@@ -66,7 +66,7 @@ def predict(feature_name, model_name):
     #load initial train set
     test_Poe = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('Poe')))
     test_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('simple')))
-    X_tst = pd.concat(test_Poe, test_simple, axis=1)
+    X_tst = pd.concat([test_Poe, test_simple], axis=1)
     del test_Poe
     del test_simple
 
