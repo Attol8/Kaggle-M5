@@ -265,10 +265,10 @@ def generate_feature(feature_name):
     logging.info('saving features')
     trn_tst = trn_tst.astype('float32', errors='ignore')
     
-    trn_tst = trn_tst.reset_index(drop=True)
+    #trn_tst = trn_tst.reset_index(drop=True)
     #save to feathers
-    trn_tst[:train_len].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
-    trn_tst[train_len:].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
+    trn_tst[:train_len].reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
+    trn_tst[train_len:].reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
 if __name__ == "__main__":
     generate_feature(feature_name = "simple" )
