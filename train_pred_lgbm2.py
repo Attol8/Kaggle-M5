@@ -22,7 +22,7 @@ def train(feature_name, model_name, lgb_params):
     train_Poe = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('Poe')))
     train_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple')))
     train_df = pd.concat([train_Poe, train_simple], axis=1)
-    print(type(train_df))
+    train_df = train_df.loc[:,~train_df.columns.duplicated()]
     del train_Poe
     del train_simple
 
