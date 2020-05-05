@@ -10,7 +10,7 @@ import gc
 import settings
 from sklearn.metrics import mean_squared_error
 from math import sqrt
-from utils import save_score
+from utils import save_score, reduce_mem_usage
 
 def seed_everything(seed=0):
     random.seed(seed)
@@ -24,6 +24,8 @@ def train(feature_name, model_name, lgb_params):
     train_df = pd.concat([train_Poe, train_simple], axis=1)
     del train_Poe
     del train_simple
+
+    train_df, NAlist = reduce_mem_usage(train_df)
 
     #prepare data for lgb
     cat_feats = ['item_id', 'dept_id','store_id', 'cat_id', 'state_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
