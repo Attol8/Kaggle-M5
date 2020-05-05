@@ -21,7 +21,7 @@ def train(feature_name, model_name, lgb_params):
     #load initial train set
     train_Poe = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('Poe')))
     train_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple')))
-    train_df = pd.concat([test_Poe, test_simple], axis=1)
+    train_df = pd.concat([train_Poe, train_simple], axis=1)
     del train_Poe
     del train_simple
 
