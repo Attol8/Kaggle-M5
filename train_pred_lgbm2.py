@@ -89,7 +89,7 @@ def train(feature_name, model_name, lgb_params):
     save_metrics(X_valid, y_valid, model_name, feature_name)
 
 
-def save_metrics(X_valid, y_valid):
+def save_metrics(X_valid, y_valid, model_name, feature_name):
     #save validation metric
     print('Predicting and saving validation metric')
     model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.bin'.format(model_name, feature_name))
