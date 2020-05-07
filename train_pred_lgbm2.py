@@ -48,11 +48,11 @@ def make_test_feature(df):
 def train(feature_name, model_name, lgb_params):
 
     #load initial train set
-    train_Poe = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('Poe')))
+    train_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('lags')))
     train_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple')))
-    train_df = pd.concat([train_Poe, train_simple], axis=1)
+    train_df = pd.concat([train_lags, train_simple], axis=1)
     train_df = train_df.loc[:,~train_df.columns.duplicated()]
-    del train_Poe
+    del train_lags
     del train_simple
 
     train_df, NAlist = reduce_mem_usage(train_df)
@@ -109,11 +109,11 @@ def predict(feature_name, model_name):
     all_preds = pd.DataFrame() # Create Dummy DataFrame to store predictions
 
     #load initial train set
-    test_Poe = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('Poe')))
+    test_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('lags')))
     test_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('simple')))
-    X_tst = pd.concat([test_Poe, test_simple], axis=1)
+    X_tst = pd.concat([test_lags, test_simple], axis=1)
     X_tst = X_tst.loc[:,~X_tst.columns.duplicated()]
-    del test_Poe
+    del test_lags
     del test_simple
 
     last_day = datetime.date(2016, 4, 24)
@@ -158,7 +158,7 @@ def predict(feature_name, model_name):
 
 if __name__ == "__main__":
     
-    feature_name = "Poe+simple" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
+    feature_name = "lags+simple" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
     model_name = 'lgbm2'
     lgb_params = {
                     'boosting_type': 'gbdt',
