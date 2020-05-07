@@ -55,7 +55,7 @@ def generate_feature(feature_name=feature_name):
         for i, col in enumerate(trn_tst.columns):
             f.write('{}\t{}\tq\n'.format(i, col))
 
-    trn_tst = reduce_mem_usage(trn_tst)
+    trn_tst, NAlist = reduce_mem_usage(trn_tst)
     logging.info('saving features')
     trn_tst[:len(train)].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
     trn_tst[len(train):].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
