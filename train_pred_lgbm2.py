@@ -50,6 +50,8 @@ def train(feature_name, model_name, lgb_params):
     #load initial train set
     train_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('lags')))
     train_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple')))
+    train_lags, NAlist = reduce_mem_usage(train_lags)
+    train_simple, NAlist = reduce_mem_usage(train_simple)
     train_df = pd.concat([train_lags, train_simple], axis=1)
     train_df = train_df.loc[:,~train_df.columns.duplicated()]
     del train_lags
