@@ -177,7 +177,7 @@ if __name__ == "__main__":
                     'boost_from_average': False,
                     'verbose': -1,
                 }
-    #train(feature_name, model_name, lgb_params)
+    train(feature_name, model_name, lgb_params)
     #predict(feature_name, model_name)
     
 
