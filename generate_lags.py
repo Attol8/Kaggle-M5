@@ -32,7 +32,7 @@ def generate_feature(feature_name=feature_name):
             col_name = 'rolling_mean_'+str(d_shift)+'_'+str(d_window)
             trn_tst[col_name] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
             col_name = 'rolling_std_'+str(d_shift)+'_'+str(d_window)
-            trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
+            trn_tst[col_name] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
 
     date_features = {
         "wday": "weekday",

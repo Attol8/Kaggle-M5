@@ -1,5 +1,6 @@
 output/feature/
 output/model/
+output/val/
 output2/
 tempCodeRunnerFile.py
 input_data/

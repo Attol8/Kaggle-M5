@@ -96,13 +96,13 @@ def reduce_mem_usage(props):
     print("Memory usage of properties dataframe is :",start_mem_usg," MB")
     NAlist = [] # Keeps track of columns that have missing values filled in.
     for col in props.columns:
-        print(props[col][:5])
+        #print(props[col][:5])
         if props[col].dtype not in [object,'datetime64[ns]']:  # Exclude strings
             
             # Print current column type
-            print("******************************")
-            print("Column: ",col)
-            print("dtype before: ",props[col].dtype)
+            #print("******************************")
+            #print("Column: ",col)
+            #print("dtype before: ",props[col].dtype)
             
             # make variables for Int, max and min
             IsInt = False

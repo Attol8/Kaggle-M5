@@ -27,6 +27,8 @@ CALENDAR_DATA = os.path.join(DIR_DATA, 'calendar.csv')
 
 #constants
 TARGET = 'sales'            # Our target
+STORES_IDS = pd.read_csv(MAIN_DATA)['store_id']
+STORES_IDS = list(STORES_IDS.unique())
 
 # #LIMITS and const
 

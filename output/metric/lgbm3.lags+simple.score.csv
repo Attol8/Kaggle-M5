@@ -1,0 +1,2 @@
+,date and time,model_name,feature_name,train_file,metric used,CV score,submission
+0,09/05/2020 17:48:27,lgbm3,lags+simple,lags+simple.trn.feather,rmse,1.8400431127519714,lgbm3.lags+simple.sub.csv
