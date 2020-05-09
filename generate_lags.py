@@ -6,7 +6,7 @@ import settings
 import logging
 from utils import reduce_mem_usage
 
-feature_name = "lags" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
+feature_name = "lags2" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
 
 def generate_feature(feature_name=feature_name):
     '''creates new features for train and test set then saves them separetely in the correct folder'''
@@ -29,10 +29,10 @@ def generate_feature(feature_name=feature_name):
     for d_shift in [1, 7 , 14, 28, 30, 60, 365]: 
         print('Shifting period:', d_shift)
         for d_window in [7, 14, 28, 30, 60]:
-            col_name = 'rolling_mean_'+str(d_shift)+'_'+str(d_window)
-            trn_tst[col_name] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
-            col_name = 'rolling_std_'+str(d_shift)+'_'+str(d_window)
-            trn_tst[col_name] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
+            col_name_m = 'rolling_mean_'+str(d_shift)+'_'+str(d_window)
+            trn_tst[col_name_m] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
+            col_name_s = 'rolling_std_'+str(d_shift)+'_'+str(d_window)
+            trn_tst[col_name_s] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
 
     date_features = {
         "wday": "weekday",

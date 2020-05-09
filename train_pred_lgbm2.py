@@ -71,7 +71,7 @@ def save_val_set(feature_name, model_name):
     train_df = train_df.loc[:,~train_df.columns.duplicated()]
     del train_lags
     del train_simple
-    train_df, NAlist = reduce_mem_usage(train_df)
+    train_df, _ = reduce_mem_usage(train_df)
 
     valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
     #useless_cols = ['id','state_id','store_id','date','wm_yr_wk', "sales","d", "wm_yr_wk", "weekday"]
@@ -97,7 +97,7 @@ def train(feature_name, model_name, lgb_params):
 
         del train_lags
         del train_simple
-        train_df, NAlist = reduce_mem_usage(train_df)       
+        train_df, _ = reduce_mem_usage(train_df)       
 
         #prepare data for lgb
         cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
@@ -172,7 +172,7 @@ def predict(feature_name, model_name):
     test_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('simple')))
 
     last_day_n = 1913
-    
+
     X_tst = pd.concat([test_lags, test_simple], axis=1)
     #print(X_tst.head())
     X_tst = X_tst.loc[:,~X_tst.columns.duplicated()]
@@ -180,19 +180,19 @@ def predict(feature_name, model_name):
     del test_lags
     del test_simple
     X_tst.reset_index(drop=True, inplace=True)
+    print(f'X_tst shape: {X_tst.shape}')
     main_time = time.time()
 
     for PREDICT_DAY in range(1,29):    
         print('Predict | Day:', PREDICT_DAY)
         start_time = time.time()
-        print(X_tst.shape)
         grid_df = X_tst.copy()
         day = last_day_n + PREDICT_DAY
         grid_df = create_lag_features_for_test(grid_df, day)
-        print(grid_df.shape)
-        missing = [x for x in grid_df.columns if x not in X_tst.columns]
-        print(missing)
-    
+        print(f'missing columns {[x for x in grid_df.columns if x not in X_tst.columns]}')
+        print(f'missing values total {grid_df.isnull().sum().sum()}')
+        print(f'columns with missing values: {grid_df.columns[grid_df.isnull().any()].tolist()}')
+
         for store_id in list(range(10)):
             model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
             estimator = pickle.load(open(model_path, 'rb'))
@@ -216,7 +216,8 @@ def predict(feature_name, model_name):
             
         print('#'*10, ' %0.2f min round |' % ((time.time() - start_time) / 60),
                     ' %0.2f min total |' % ((time.time() - main_time) / 60),
-                    ' %0.2f day sales |' % (temp_df['F'+str(PREDICT_DAY)].sum()))
+                    ' %0.2f day sales |' % (temp_df['F'+str(PREDICT_DAY)].sum()),
+                    '')
         del temp_df
 
     #make submission
