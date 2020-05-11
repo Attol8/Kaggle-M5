@@ -146,7 +146,7 @@ def predict(feature_name, model_name):
             store_mask = grid_df['store_id']==store_id
             mask = day_mask & store_mask
             #print(X_tst_store.columns)
-            print(grid_df[mask][features_columns].head())
+            #print(grid_df[mask][features_columns].head())
             X_tst.loc[mask, 'sales'] = estimator.predict(grid_df[mask][features_columns])
         
         # Make good column naming and add 
