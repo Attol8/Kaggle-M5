@@ -147,12 +147,14 @@ def predict(feature_name, model_name):
             model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
             estimator = pickle.load(open(model_path, 'rb'))
             useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
+            cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
             features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
             day_mask = X_tst['d'] == day
             store_mask = X_tst['store_id']==store_id
             mask = (day_mask) & (store_mask)
             #print(X_tst_store.columns)
             #print(grid_df[mask][features_columns].head())
+            test_data = lgb.Dataset(grid_df[mask][features_columns], label= grid_df[mask]['sales'], categorical_feature=cat_feats, free_raw_data=False)
             X_tst.loc[mask, 'sales'] = estimator.predict(grid_df[mask][features_columns])
         
         # Make good column naming and add 
