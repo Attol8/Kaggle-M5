@@ -135,7 +135,7 @@ def predict(feature_name, model_name):
         grid_df = create_lag_features_for_test(grid_df, day)
         print(f'missing columns {[x for x in grid_df.columns if x not in X_tst.columns]}')
         print(f'missing values total {grid_df.isnull().sum().sum()}')
-        print(f'columns with missing values: {grid_df.columns[grid_df.isnull().any()].tolist()}')
+        #print(f'columns with missing values: {grid_df.columns[grid_df.isnull().any()].tolist()}')
 
         for store_id in list(range(10)):
             model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
@@ -146,6 +146,7 @@ def predict(feature_name, model_name):
             store_mask = grid_df['store_id']==store_id
             mask = day_mask & store_mask
             #print(X_tst_store.columns)
+            print(grid_df[mask][features_columns].head())
             X_tst.loc[mask, 'sales'] = estimator.predict(grid_df[mask][features_columns])
         
         # Make good column naming and add 
