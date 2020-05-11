@@ -55,10 +55,10 @@ def train(feature_name, model_name, lgb_params):
 
         #prepare data for lgb
         cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
-        useless_cols = ['index', 'id', 'date', "d", "sales"]
+        useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
         features_columns = train_df.columns[~train_df.columns.isin(useless_cols)]
         print(f'features columns: {features_columns}')
-        
+
         last_day = datetime.date(2016, 4, 24)
         P_HORIZON = datetime.timedelta(28)
         valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
@@ -95,7 +95,7 @@ def save_metrics(feature_name, model_name):
     
     for store_id in list(range(10)):
         store_mask = grid_df['store_id']==store_id
-        useless_cols = ['index', 'id', 'date', "d", "sales"]
+        useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
         features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
 
         model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
@@ -143,7 +143,7 @@ def predict(feature_name, model_name):
         for store_id in list(range(10)):
             model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
             estimator = pickle.load(open(model_path, 'rb'))
-            useless_cols = ['index', 'id', 'date',"sales","d"]
+            useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
             features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
             day_mask = grid_df['d'] == day
             store_mask = grid_df['store_id']==store_id
