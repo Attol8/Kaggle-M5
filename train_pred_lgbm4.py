@@ -48,6 +48,7 @@ def save_val_set(feature_name, model_name):
 def train(feature_name, model_name, lgb_params):
 
     for store_id in list(range(10)):   #stores are encoded
+        print('\n')
         print('loading store {0} dataset'.format(store_id))
         train_df = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('best')))
         train_df = train_df[train_df['store_id']==store_id]
@@ -92,6 +93,7 @@ def save_metrics(feature_name, model_name):
 
     grid_df = valid_data.copy()
     grid_df['sales'] = 0
+    print(grid_df.shape)
     
     for store_id in list(range(10)):
         store_mask = grid_df['store_id']==store_id
@@ -195,10 +197,10 @@ if __name__ == "__main__":
     "min_data_in_leaf": 100,
 }
 
-    save_val_set(feature_name, model_name)
-    train(feature_name, model_name, lgb_params)
+    #save_val_set(feature_name, model_name)
+    #train(feature_name, model_name, lgb_params)
     save_metrics(feature_name, model_name)
-    predict(feature_name, model_name)
+    #predict(feature_name, model_name)
     
 
 
