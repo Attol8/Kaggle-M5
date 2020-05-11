@@ -93,7 +93,7 @@ def save_metrics(feature_name, model_name):
     
     for store_id in list(range(10)):
         store_mask = grid_df['store_id']==store_id
-        useless_cols = ['date',"sales","d"]
+        useless_cols = ['id', 'date',"sales","d"]
         features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
 
         model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
