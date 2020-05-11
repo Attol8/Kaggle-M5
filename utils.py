@@ -147,4 +147,5 @@ def reduce_mem_usage(props):
 
 if __name__ == "__main__":
     #make_out_directories() # run this code to create output directories 
+    make_test_train(is_train=True)
     make_test_train(False)
