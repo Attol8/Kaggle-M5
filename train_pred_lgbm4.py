@@ -124,7 +124,7 @@ def predict(feature_name, model_name):
     #load initial test set
     X_tst = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('best')))
     last_day_n = 1913
-    X_tst.reset_index(drop=True, inplace=True)
+    #X_tst.reset_index(drop=True, inplace=True)
     print(f'X_tst shape: {X_tst.shape}')
     print(X_tst.columns)
     main_time = time.time()
@@ -142,7 +142,7 @@ def predict(feature_name, model_name):
         for store_id in list(range(10)):
             model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
             estimator = pickle.load(open(model_path, 'rb'))
-            useless_cols = ['id', 'date',"sales","d"]
+            useless_cols = ['index', 'id', 'date',"sales","d"]
             features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
             day_mask = grid_df['d'] == day
             store_mask = grid_df['store_id']==store_id
