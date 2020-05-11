@@ -1,0 +1,2 @@
+,date and time,model_name,feature_name,train_file,metric used,CV score,submission
+0,11/05/2020 18:34:41,lgbm3,best,best.trn.feather,rmse,1.9216948641275455,lgbm3.best.sub.csv
