@@ -61,9 +61,10 @@ def train(feature_name, model_name, lgb_params):
         last_day = datetime.date(2016, 4, 24)
         P_HORIZON = datetime.timedelta(28)
         valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
-
+        print(max(train_df[valid_mask]['date'].unique()))
         X_train, y_train = train_df[features_columns], train_df['sales']
         X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
+        
         del train_df; gc.collect()
 
         train_data = lgb.Dataset(X_train, label= y_train, categorical_feature=cat_feats, free_raw_data=False)
@@ -125,6 +126,7 @@ def predict(feature_name, model_name):
     last_day_n = 1913
     X_tst.reset_index(drop=True, inplace=True)
     print(f'X_tst shape: {X_tst.shape}')
+    print(X_tst.columns)
     main_time = time.time()
 
     for PREDICT_DAY in range(1,29):    
@@ -194,7 +196,7 @@ if __name__ == "__main__":
 
     #save_val_set(feature_name, model_name)
     #train(feature_name, model_name, lgb_params)
-    save_metrics(feature_name, model_name)
+    #save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     
 
