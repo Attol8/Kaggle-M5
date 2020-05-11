@@ -16,8 +16,7 @@ from utils import save_score, reduce_mem_usage
 def create_lag_features_for_test(df, day):
     print(f'creating lag and windows feature for day {day}')
     #create lags features
-    df['d'] = df['d'].str[-4:]
-    df['d'] = df['d'].astype('float32')
+
     lags = [7, 28]
     lag_cols = [f"lag_{lag}" for lag in lags]
     for lag, lag_col in zip(lags, lag_cols):
@@ -126,6 +125,8 @@ def predict(feature_name, model_name):
 
     #load initial test set
     X_tst = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('best')))
+    X_tst['d'] = X_tst['d'].str[-4:]
+    X_tst['d'] = X_tst['d'].astype('float32')
     last_day_n = 1913
     #X_tst.reset_index(drop=True, inplace=True)
     print(f'X_tst shape: {X_tst.shape}')
@@ -147,9 +148,9 @@ def predict(feature_name, model_name):
             estimator = pickle.load(open(model_path, 'rb'))
             useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
             features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
-            day_mask = grid_df['d'] == day
-            store_mask = grid_df['store_id']==store_id
-            mask = day_mask & store_mask
+            day_mask = X_tst['d'] == day
+            store_mask = X_tst['store_id']==store_id
+            mask = (day_mask) & (store_mask)
             #print(X_tst_store.columns)
             #print(grid_df[mask][features_columns].head())
             X_tst.loc[mask, 'sales'] = estimator.predict(grid_df[mask][features_columns])
@@ -199,8 +200,8 @@ if __name__ == "__main__":
 
     #save_val_set(feature_name, model_name)
     #train(feature_name, model_name, lgb_params)
-    save_metrics(feature_name, model_name)
-    #predict(feature_name, model_name)
+    #save_metrics(feature_name, model_name)
+    predict(feature_name, model_name)
     
 
 
