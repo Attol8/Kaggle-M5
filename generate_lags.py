@@ -26,7 +26,7 @@ def generate_feature(feature_name=feature_name):
         trn_tst[lag_col] = trn_tst[["id","sales"]].groupby("id")["sales"].shift(lag)
 
     #create rolling windows mean and std features with various day shift
-    for d_shift in [1, 7 , 14, 28, 30, 60, 365]: 
+    for d_shift in [1, 7 , 14, 28, 30, 60]: 
         print('Shifting period:', d_shift)
         for d_window in [7, 14, 28, 30, 60]:
             col_name_m = 'rolling_mean_'+str(d_shift)+'_'+str(d_window)
@@ -55,7 +55,7 @@ def generate_feature(feature_name=feature_name):
         for i, col in enumerate(trn_tst.columns):
             f.write('{}\t{}\tq\n'.format(i, col))
 
-    trn_tst, NAlist = reduce_mem_usage(trn_tst)
+    trn_tst, _ = reduce_mem_usage(trn_tst)
     logging.info('saving features')
     trn_tst[:len(train)].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
     trn_tst[len(train):].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))

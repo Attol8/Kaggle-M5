@@ -28,7 +28,7 @@ def create_lag_features_for_test(df, day):
 
     #create rolling windows mean and std features with various day shift
     windows = [7, 14, 28, 30, 60]
-    shifts = [1, 7 , 14, 28, 30, 60, 365]
+    shifts = [1, 7 , 14, 28, 30, 60]
     for window in windows:
         for shift in shifts:
             df_window = df[(df.d <= day-shift) & (df.d > day-(shift+window))] #filter for date <= day-shift and date > 
@@ -36,9 +36,9 @@ def create_lag_features_for_test(df, day):
             df.loc[df.d == day,f"rolling_mean_{shift}_{window}"] = \
                 df_window_grouped.sales.values
             
-            #df_window_grouped = df_window.groupby("id").agg({'sales':'std'}).reindex(df.loc[df.d == day,'id'])
-            #df.loc[df.d == day,f"rolling_std_{shift}_{window}"] = \
-                #df_window_grouped.sales.values            
+            df_window_grouped = df_window.groupby("id").agg({'sales':'std'}).reindex(df.loc[df.d == day,'id'])
+            df.loc[df.d == day,f"rolling_std_{shift}_{window}"] = \
+                df_window_grouped.sales.values            
 
     date_features = {
         "wday": "weekday",
@@ -57,7 +57,7 @@ def create_lag_features_for_test(df, day):
     return df
 
 def save_val_set(feature_name, model_name):
-    train_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('lags')))
+    train_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('lags2')))
     train_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple'))) 
 
     print('saving validation set')
@@ -84,7 +84,7 @@ def train(feature_name, model_name, lgb_params):
 
     for store_id in list(range(10)):   #stores are encoded
         print('loading store {0} dataset'.format(store_id))
-        train_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('lags')))
+        train_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('lags2')))
         #train_lags, NAlist = reduce_mem_usage(train_lags)
         train_lags = train_lags[train_lags['store_id']==store_id]
         #train_df = train_all[train_all['store_id']==store_id]
@@ -168,7 +168,7 @@ def predict(feature_name, model_name):
     all_preds = pd.DataFrame() # Create Dummy DataFrame to store predictions
 
     #load initial test set
-    test_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('lags')))
+    test_lags = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('lags2')))
     test_simple = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('simple')))
 
     last_day_n = 1913
@@ -217,7 +217,7 @@ def predict(feature_name, model_name):
         print('#'*10, ' %0.2f min round |' % ((time.time() - start_time) / 60),
                     ' %0.2f min total |' % ((time.time() - main_time) / 60),
                     ' %0.2f day sales |' % (temp_df['F'+str(PREDICT_DAY)].sum()),
-                    '')
+                    '\n')
         del temp_df
 
     #make submission
@@ -228,7 +228,7 @@ def predict(feature_name, model_name):
 
 if __name__ == "__main__":
     
-    feature_name = "lags+simple" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
+    feature_name = "lags2+simple" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
     model_name = 'lgbm3'
     lgb_params = {
                     'boosting_type': 'gbdt',
@@ -247,6 +247,7 @@ if __name__ == "__main__":
                     'boost_from_average': False,
                     'verbose': -1,
                 }
+
     #save_val_set(feature_name, model_name)
     #train(feature_name, model_name, lgb_params)
     #save_metrics(feature_name, model_name)
