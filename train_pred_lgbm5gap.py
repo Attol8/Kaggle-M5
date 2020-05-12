@@ -32,6 +32,15 @@ def create_lag_features_for_test(df, day):
                 df_window_grouped.sales.values
     return df
 
+def numbers_check(features_l):
+    df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[0])))
+    df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[1])))
+    df = pd.concat([df_1, df_2], axis=1)
+    df = df.loc[:,~df.columns.duplicated()]
+    print(f'train shape is : {df.shape}')
+    days= df.shape[0]/30490
+    print(f'train days = {days}')
+
 def join_features(features_l, store_id, is_train=True):
     if is_train:
         df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[0])))
@@ -46,8 +55,6 @@ def join_features(features_l, store_id, is_train=True):
 
     df = pd.concat([df_1, df_2], axis=1)
     df = df.loc[:,~df.columns.duplicated()]
-    print(f'combined shape: {df.shape}')
-    print(f'combined columns: {df.columns}')
     del df_1
     del df_2
 
@@ -232,7 +239,7 @@ if __name__ == "__main__":
                     'verbose': -1,
                 }
 
-
+    numbers_check(['best', 'simple'])
     save_val_set(feature_name, model_name)
     train(feature_name, model_name, lgb_params)
     save_metrics(feature_name, model_name)
