@@ -46,9 +46,11 @@ def numbers_check(features_l):
 def join_features(features_l, store_id, is_train=True):
     if is_train:
         df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[0])))
+        df_1, _ = reduce_mem_usage(df_1)
         df_1 = df_1[df_1['store_id'] == store_id]
 
         df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[1])))
+        df_2, _ = reduce_mem_usage(df_2)
         df_2 = df_2[df_2['store_id'] == store_id]
     
     else:
