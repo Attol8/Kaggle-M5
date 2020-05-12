@@ -65,7 +65,7 @@ def train(feature_name, model_name, lgb_params):
         train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
         print(max(train_df[train_mask]['date'].unique()))
 
-        X_train, y_train = train_df[train_mask][features_columns], train_df['sales']
+        X_train, y_train = train_df[train_mask][features_columns], train_df[train_mask]['sales']
         X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
         
         del train_df; gc.collect()
