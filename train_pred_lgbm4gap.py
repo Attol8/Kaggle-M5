@@ -62,7 +62,9 @@ def train(feature_name, model_name, lgb_params):
         last_day = datetime.date(2016, 4, 24)
         P_HORIZON = datetime.timedelta(28)
         valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
-        print(max(train_df[valid_mask]['date'].unique()))
+        train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
+        print(max(train_df[train_mask]['date'].unique()))
+
         X_train, y_train = train_df[features_columns], train_df['sales']
         X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
         
@@ -182,7 +184,7 @@ def predict(feature_name, model_name):
 if __name__ == "__main__":
     
     feature_name = "best" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
-    model_name = 'lgbm3'
+    model_name = 'lgbm4gap'
     lgb_params ={
     "objective" : "poisson",
     "metric" :"rmse",
@@ -199,9 +201,9 @@ if __name__ == "__main__":
     "min_data_in_leaf": 100,
 }
 
-    #save_val_set(feature_name, model_name)
-    #train(feature_name, model_name, lgb_params)
-    #save_metrics(feature_name, model_name)
+    save_val_set(feature_name, model_name)
+    train(feature_name, model_name, lgb_params)
+    save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     
 
