@@ -37,6 +37,8 @@ def numbers_check(features_l):
     df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[1])))
     df = pd.concat([df_1, df_2], axis=1)
     df = df.loc[:,~df.columns.duplicated()]
+    print(f'feat1 shape is : {df_1.shape}')
+    print(f'feat2 shape is : {df_2.shape}')
     print(f'train shape is : {df.shape}')
     days= df.shape[0]/30490
     print(f'train days = {days}')
