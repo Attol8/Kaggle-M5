@@ -32,16 +32,42 @@ def create_lag_features_for_test(df, day):
                 df_window_grouped.sales.values
     return df
 
+def join_features(features_l, store_id, is_train=True):
+    if is_train:
+        df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[0])))
+        df_1 = df_1[df_1['store_id'] == store_id]
+
+        df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[1])))
+        df_2 = df_2[df_2['store_id'] == store_id]
+    
+    else:
+        df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(features_l[0])))
+        df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(features_l[1])))
+
+    df = pd.concat([df_1, df_2], axis=1)
+    df = df.loc[:,~df.columns.duplicated()]
+    print(f'combined shape: {df.shape}')
+    print(f'combined columns: {df.columns}')
+    del df_1
+    del df_2
+
+    return df
+
 def save_val_set(feature_name, model_name):
-    train_df = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('best')))
 
+    df_l = [] #list of validation sets for each store
+    for store_id in list(range(10)):
+        train_df = join_features(['best', 'simple'], store_id=store_id)
+        last_day = datetime.date(2016, 4, 24)
+        #last_day_n = 1913
+        P_HORIZON = datetime.timedelta(28)  
+        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
+        val_df = train_df[valid_mask]
+        df_l.append(val_df)
+    
     print('saving validation set')
-    last_day = datetime.date(2016, 4, 24)
-    #last_day_n = 1913
-    P_HORIZON = datetime.timedelta(28)  
-    valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
-
-    X_val = train_df[valid_mask]
+    X_val = pd.concat(df_l, axis=0) #concat all the stores' validation sets in one df
+    print(f'validation set shape is : {X_val.shape}')
     X_val.to_csv(os.path.join(settings.VAL_DIR, 'val.{0}.{1}.csv'.format(model_name, feature_name)), index=False)
 
 def train(feature_name, model_name, lgb_params):
@@ -49,13 +75,12 @@ def train(feature_name, model_name, lgb_params):
     for store_id in list(range(10)):   #stores are encoded
         print('\n')
         print('loading store {0} dataset'.format(store_id))
-        train_df = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('best')))
-        train_df = train_df[train_df['store_id']==store_id]
+        train_df = join_features(['best', 'simple'], store_id=store_id)
         train_df, _ = reduce_mem_usage(train_df)       
 
         #prepare data for lgb
         cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
-        useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
+        useless_cols = ['store_id',  'wm_yr_wk', 'state_id','index', 'id', 'date', "d", "sales"]
         features_columns = train_df.columns[~train_df.columns.isin(useless_cols)]
         print(f'features columns: {features_columns}')
 
@@ -126,7 +151,7 @@ def predict(feature_name, model_name):
     all_preds = pd.DataFrame() # Create Dummy DataFrame to store predictions
 
     #load initial test set
-    X_tst = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format('best')))
+    X_tst = join_features(['best', 'simple'], 0, is_train=False)
     X_tst['d'] = X_tst['d'].str[-4:]
     X_tst['d'] = X_tst['d'].astype('float32')
     last_day_n = 1913
@@ -183,7 +208,7 @@ def predict(feature_name, model_name):
 
 if __name__ == "__main__":
     
-    feature_name = "best" 
+    feature_name = "best+simple" 
     model_name = 'lgbm5gap'
     lgb_params = {
                     'boosting_type': 'gbdt',
