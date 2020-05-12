@@ -155,7 +155,7 @@ def predict(feature_name, model_name):
             #print(X_tst_store.columns)
             #print(grid_df[mask][features_columns].head())
             test_data = lgb.Dataset(grid_df[mask][features_columns], label= grid_df[mask]['sales'], categorical_feature=cat_feats, free_raw_data=False)
-            X_tst.loc[mask, 'sales'] = estimator.predict(grid_df[mask][features_columns])
+            X_tst.loc[mask, 'sales'] = estimator.predict(test_data)
         
         # Make good column naming and add 
         # to all_preds DataFrame
@@ -184,25 +184,24 @@ if __name__ == "__main__":
     feature_name = "best" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
     model_name = 'lgbm3'
     lgb_params ={
-        "objective" : "poisson",
-        "metric" :"rmse",
-        "force_row_wise" : True,
-        "learning_rate" : 0.075,
+    "objective" : "poisson",
+    "metric" :"rmse",
+    "force_row_wise" : True,
+    "learning_rate" : 0.075,
 #         "sub_feature" : 0.8,
-        "sub_row" : 0.75,
-        "bagging_freq" : 1,
-        "lambda_l2" : 0.1,
+    "sub_row" : 0.75,
+    "bagging_freq" : 1,
+    "lambda_l2" : 0.1,
 #         "nthread" : 4
-        "metric": ["rmse"],
     'verbosity': 1,
     'num_iterations' : 1200,
     'num_leaves': 128,
     "min_data_in_leaf": 100,
 }
 
-    save_val_set(feature_name, model_name)
-    train(feature_name, model_name, lgb_params)
-    save_metrics(feature_name, model_name)
+    #save_val_set(feature_name, model_name)
+    #train(feature_name, model_name, lgb_params)
+    #save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     
 
