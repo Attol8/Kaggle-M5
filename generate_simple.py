@@ -67,7 +67,7 @@ def generate_feature(feature_name):
     test = pd.read_feather(settings.TEST_DATA)
     trn_tst = train.append(test)[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd',
     'sales']]
-    trn_tst['d'] = 'd_' + trn_tst['d'].astype(str)
+    #trn_tst['d'] = 'd_' + trn_tst['d'].astype(str)
     train_len = len(train) #we need it as we are going to delete train set for memory reason
     print(len(trn_tst))
 
