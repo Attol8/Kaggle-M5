@@ -189,7 +189,7 @@ if __name__ == "__main__":
     "objective" : "poisson",
     "metric" :"rmse",
     "force_row_wise" : True,
-    "learning_rate" : 0.075,
+    "learning_rate" : 0.05,
 #         "sub_feature" : 0.8,
     "sub_row" : 0.75,
     "bagging_freq" : 1,
