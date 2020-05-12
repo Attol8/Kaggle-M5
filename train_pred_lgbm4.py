@@ -183,21 +183,24 @@ if __name__ == "__main__":
     
     feature_name = "best" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
     model_name = 'lgbm3'
-    lgb_params ={
-    "objective" : "poisson",
-    "metric" :"rmse",
-    "force_row_wise" : True,
-    "learning_rate" : 0.075,
-#         "sub_feature" : 0.8,
-    "sub_row" : 0.75,
-    "bagging_freq" : 1,
-    "lambda_l2" : 0.1,
-#         "nthread" : 4
-    'verbosity': 1,
-    'num_iterations' : 1200,
-    'num_leaves': 128,
-    "min_data_in_leaf": 100,
-}
+    lgb_params = {
+                    'boosting_type': 'gbdt',
+                    'objective': 'tweedie',
+                    'tweedie_variance_power': 1.1,
+                    'is_training_metric': True,
+                    'metric': 'rmse',
+                    'subsample': 0.5,
+                    'subsample_freq': 1,
+                    'learning_rate': 0.03,
+                    'num_leaves': 2**11-1,
+                    'min_data_in_leaf': 2**12-1,
+                    'feature_fraction': 0.5,
+                    'max_bin': 100,
+                    'n_estimators': 1300,
+                    'boost_from_average': False,
+                    'verbose': -1,
+                }
+
 
     #save_val_set(feature_name, model_name)
     #train(feature_name, model_name, lgb_params)
