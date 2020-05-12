@@ -200,9 +200,9 @@ if __name__ == "__main__":
     "min_data_in_leaf": 100,
 }
 
-    #save_val_set(feature_name, model_name)
-    #train(feature_name, model_name, lgb_params)
-    #save_metrics(feature_name, model_name)
+    save_val_set(feature_name, model_name)
+    train(feature_name, model_name, lgb_params)
+    save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     
 
