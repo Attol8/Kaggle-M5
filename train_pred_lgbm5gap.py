@@ -57,6 +57,7 @@ def join_features(features_l, store_id, is_train=True):
 
     df = pd.concat([df_1, df_2], axis=1)
     df = df.loc[:,~df.columns.duplicated()]
+    df.dropna(inplace = True)
     del df_1
     del df_2
 

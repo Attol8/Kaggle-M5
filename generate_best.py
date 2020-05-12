@@ -79,7 +79,7 @@ def generate_feature(feature_name, is_train=True):
     useless_cols = ["wm_yr_wk", "weekday"]
     train_cols = dt.columns[~dt.columns.isin(useless_cols)]
     dt = dt[train_cols]
-    if is_train: dt.dropna(inplace = True)
+    #if is_train: dt.dropna(inplace = True)
     
     ########################### Final list of features
     #################################################################################
