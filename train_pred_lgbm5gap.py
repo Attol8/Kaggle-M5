@@ -67,18 +67,19 @@ def join_features(features_l, store_id, is_train=True):
 
 def save_val_set(feature_name, model_name):
 
-    df_l = [] #list of validation sets for each store
-    for store_id in list(range(10)):
-        train_df = join_features(['best', 'simple'], store_id=store_id)
-        last_day = datetime.date(2016, 4, 24)
-        #last_day_n = 1913
-        P_HORIZON = datetime.timedelta(28)  
-        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
-        val_df = train_df[valid_mask]
-        df_l.append(val_df)
-    
+    df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('best')))
+    df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple')))
+    train_df = pd.concat([df_1, df_2], axis=1)
+    train_df = train_df.loc[:,~train_df.columns.duplicated()]
+
+    del df_1
+    del df_2
+
+    last_day = datetime.date(2016, 4, 24)
+    P_HORIZON = datetime.timedelta(28)
+    valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
+    X_val = train_df[valid_mask]
     print('saving validation set')
-    X_val = pd.concat(df_l, axis=0) #concat all the stores' validation sets in one df
     print(f'validation set shape is : {X_val.shape}')
     X_val.to_csv(os.path.join(settings.VAL_DIR, 'val.{0}.{1}.csv'.format(model_name, feature_name)), index=False)
 
@@ -235,7 +236,7 @@ if __name__ == "__main__":
                     'num_leaves': 1574,
                     'min_data_in_leaf': 2**12-1,
                     'feature_fraction':  0.4381,
-                    'max_bin': 11.46,
+                    'max_bin': 12,
                     'max_depth' : 23,
                     'min_child_weight' : 17,
                     'min_split_gain' : 0.0184,
@@ -244,7 +245,7 @@ if __name__ == "__main__":
                     'verbose': -1,
                 }
 
-    numbers_check(['best', 'simple'])
+    #numbers_check(['best', 'simple'])
     save_val_set(feature_name, model_name)
     train(feature_name, model_name, lgb_params)
     save_metrics(feature_name, model_name)
