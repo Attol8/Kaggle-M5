@@ -232,7 +232,7 @@ if __name__ == "__main__":
                     'subsample': 0.334,
                     'bagging_fraction' : 0.9411,
                     'subsample_freq': 1,
-                    'learning_rate': 0.01,
+                    'learning_rate': 0.03,
                     'num_leaves': 1574,
                     'min_data_in_leaf': 2**12-1,
                     'feature_fraction':  0.4381,
