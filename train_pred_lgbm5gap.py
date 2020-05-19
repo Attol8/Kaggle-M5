@@ -136,7 +136,7 @@ def save_metrics(feature_name, model_name):
     
     for store_id in list(range(10)):
         store_mask = grid_df['store_id']==store_id
-        useless_cols = ['store_id', 'state_id','index', 'id', 'date', 'd', 'sales']
+        useless_cols = ['store_id', 'wm_yr_wk', 'state_id','index', 'id', 'date', 'd', 'sales']
         features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
         print(f'features columns: {features_columns}')
 
@@ -187,7 +187,7 @@ def predict(feature_name, model_name):
         for store_id in list(range(10)):
             model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
             estimator = pickle.load(open(model_path, 'rb'))
-            useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
+            useless_cols = ['store_id', 'wm_yr_wk', 'state_id','index', 'id', 'date', 'd', 'sales']
             #cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
             features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
             day_mask = X_tst['d'] == day
