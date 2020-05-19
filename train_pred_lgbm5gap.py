@@ -136,8 +136,9 @@ def save_metrics(feature_name, model_name):
     
     for store_id in list(range(10)):
         store_mask = grid_df['store_id']==store_id
-        useless_cols = ['store_id',  'state_id','index', 'id', 'date', "d", "sales"]
+        useless_cols = ['store_id', 'state_id','index', 'id', 'date', 'd', 'sales']
         features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
+        print(f'features columns: {features_columns}')
 
         model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
         estimator = pickle.load(open(model_path, 'rb'))
@@ -246,8 +247,8 @@ if __name__ == "__main__":
                 }
 
     #numbers_check(['best', 'simple'])
-    save_val_set(feature_name, model_name)
-    train(feature_name, model_name, lgb_params)
+    #save_val_set(feature_name, model_name)
+    #train(feature_name, model_name, lgb_params)
     save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     

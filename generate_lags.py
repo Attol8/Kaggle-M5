@@ -49,7 +49,8 @@ def generate_feature(feature_name=feature_name):
         else:
             trn_tst[date_feat_name] = getattr(trn_tst["date"].dt, date_feat_func).astype("int16")
 
-    print(f'shape of all data after lags features: {trn_tst.shape}')    
+    print(trn_tst[:len(train)].info())
+    print(trn_tst[len(train):].info())        
 
     with open(os.path.join(settings.FEATURE_DIR, '{0}.fmap'.format(feature_name)), 'w') as f:
         for i, col in enumerate(trn_tst.columns):
