@@ -64,12 +64,18 @@ def generate_feature(feature_name):
     "month": "int16", "year": "int16", "snap_CA": "float32", 'snap_TX': 'float32', 'snap_WI': 'float32'}
     PRICE_DTYPES = {"store_id": "category", "item_id": "category", "wm_yr_wk": "int16","sell_price":"float32" }
     train = pd.read_feather(settings.TRAIN_DATA)
+    #code for taking a sample of the training data (comment if you want fll data set)
+    last_day = datetime.date(2016, 4, 24)
+    P_HORIZON = datetime.timedelta(365)
+    sample_mask = train['date']>str((last_day-P_HORIZON))
+    train = train[sample_mask]
+
     test = pd.read_feather(settings.TEST_DATA)
     trn_tst = train.append(test)[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd',
     'sales']]
     #trn_tst['d'] = 'd_' + trn_tst['d'].astype(str)
     train_len = len(train) #we need it as we are going to delete train set for memory reason
-    print(len(trn_tst))
+
 
     del train
     del test

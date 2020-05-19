@@ -229,7 +229,7 @@ if __name__ == "__main__":
                     'tweedie_variance_power': 1.1,
                     'is_training_metric': True,
                     'metric': 'rmse',
-                    'subsample': 0.334,
+                    'subsample': 0.5,
                     'bagging_fraction' : 0.9411,
                     'subsample_freq': 1,
                     'learning_rate': 0.03,
