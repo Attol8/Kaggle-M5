@@ -89,7 +89,7 @@ def train(feature_name, model_name, lgb_params):
         train_df = join_features(['best', 'simple'], store_id=store_id)
         train_df, _ = reduce_mem_usage(train_df) 
         print(f'train shape before drop : {train_df.shape}') #drop nas from dataset
-        train_df.drpona(inplace=True)  
+        train_df.dropna(inplace=True)  
         print(f'train shape after drop : {train_df.shape}')
 
         #prepare data for lgb
