@@ -18,16 +18,14 @@ def make_out_directories(output_path = settings.OUTPUT_DIR):
         else:
             os.mkdir(os.path.join(output_path, dir))
 
-def make_test_train(is_train = True, nrows = None, first_day = 1050):
+def make_test_train(is_train = True, nrows = None, first_day = 1500):
     #categories' types
     CAL_DTYPES={"event_name_1": "category", "event_name_2": "category", "event_type_1": "category", 
     "event_type_2": "category", "weekday": "category", 'wm_yr_wk': 'int16', "wday": "int16",
     "month": "int16", "year": "int16", "snap_CA": "float32", 'snap_TX': 'float32', 'snap_WI': 'float32' }
     PRICE_DTYPES = {"store_id": "category", "item_id": "category", "wm_yr_wk": "int16","sell_price":"float32" }
-    h = 28 
     max_lags = 57
     tr_last = 1913
-    fday = datetime(2016,4, 25) 
     prices = pd.read_csv(settings.PRICES_DATA, dtype = PRICE_DTYPES)
     for col, col_dtype in PRICE_DTYPES.items():
         if col_dtype == "category":
@@ -64,8 +62,11 @@ def make_test_train(is_train = True, nrows = None, first_day = 1050):
                   var_name = "d",
                   value_name = "sales")
     
+    print(dt.shape)
     dt = dt.merge(cal, on= "d", copy = False)
+    print(dt.shape)
     dt = dt.merge(prices, on = ["store_id", "item_id", "wm_yr_wk"], copy = False)
+    print(dt.shape)
 
     if is_train:
         dt.to_feather(settings.TRAIN_DATA)
@@ -84,7 +85,7 @@ def save_score(model_name, feature_name, params, CV_score):
 
 def reduce_mem_usage(props):
     start_mem_usg = props.memory_usage().sum() / 1024**2 
-    print("Memory usage of properties dataframe is :",start_mem_usg," MB")
+    #print("Memory usage of properties dataframe is :",start_mem_usg," MB")
     NAlist = [] # Keeps track of columns that have missing values filled in.
     for col in props.columns:
         #print(props[col][:5])
@@ -139,13 +140,13 @@ def reduce_mem_usage(props):
                 props[col] = props[col].astype(np.float32)
     
     # Print final result
-    print("___MEMORY USAGE AFTER COMPLETION:___")
-    mem_usg = props.memory_usage().sum() / 1024**2 
-    print("Memory usage is: ",mem_usg," MB")
-    print("This is ",100*mem_usg/start_mem_usg,"% of the initial size")
+    #print("___MEMORY USAGE AFTER COMPLETION:___")
+    #mem_usg = props.memory_usage().sum() / 1024**2 
+    #print("Memory usage is: ",mem_usg," MB")
+    #print("This is ",100*mem_usg/start_mem_usg,"% of the initial size")
     return props, NAlist
 
 if __name__ == "__main__":
     #make_out_directories() # run this code to create output directories 
-    make_test_train(is_train=True, first_day=350)
+    make_test_train(is_train=True)
     make_test_train(False)

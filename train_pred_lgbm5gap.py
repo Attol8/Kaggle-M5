@@ -40,8 +40,6 @@ def numbers_check(features_l):
     print(f'feat1 shape is : {df_1.shape}')
     print(f'feat2 shape is : {df_2.shape}')
     print(f'train shape is : {df.shape}')
-    days= df.shape[0]/30490
-    print(f'train days = {days}')
 
 def join_features(features_l, store_id, is_train=True):
     if is_train:
@@ -89,19 +87,20 @@ def train(feature_name, model_name, lgb_params):
         print('\n')
         print('loading store {0} dataset'.format(store_id))
         train_df = join_features(['best', 'simple'], store_id=store_id)
-        train_df, _ = reduce_mem_usage(train_df)       
+        train_df, _ = reduce_mem_usage(train_df) 
+        print(f'train shape before drop : {train_df.shape}') #drop nas from dataset
+        train_df.drpona(inplace=True)  
+        print(f'train shape after drop : {train_df.shape}')
 
         #prepare data for lgb
         cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
         useless_cols = ['store_id',  'wm_yr_wk', 'state_id','index', 'id', 'date', "d", "sales"]
         features_columns = train_df.columns[~train_df.columns.isin(useless_cols)]
-        print(f'features columns: {features_columns}')
 
         last_day = datetime.date(2016, 4, 24)
         P_HORIZON = datetime.timedelta(28)
         valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
         train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
-        print(max(train_df[train_mask]['date'].unique()))
 
         X_train, y_train = train_df[train_mask][features_columns], train_df[train_mask]['sales']
         X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
@@ -190,12 +189,9 @@ def predict(feature_name, model_name):
             useless_cols = ['store_id', 'wm_yr_wk', 'state_id','index', 'id', 'date', 'd', 'sales']
             #cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
             features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
-            day_mask = X_tst['d'] == day
-            store_mask = X_tst['store_id']==store_id
+            day_mask = grid_df['d'] == day
+            store_mask = grid_df['store_id']==store_id
             mask = (day_mask) & (store_mask)
-            #print(X_tst_store.columns)
-            #print(grid_df[mask][features_columns].head())
-            #test_data = lgb.Dataset(grid_df[mask][features_columns], label= grid_df[mask]['sales'], categorical_feature=cat_feats, free_raw_data=False)
             X_tst.loc[mask, 'sales'] = estimator.predict(grid_df[mask][features_columns])
         
         # Make good column naming and add 
@@ -246,9 +242,9 @@ if __name__ == "__main__":
                     'verbose': -1,
                 }
 
-    #numbers_check(['best', 'simple'])
-    #save_val_set(feature_name, model_name)
-    #train(feature_name, model_name, lgb_params)
+    numbers_check(['best', 'simple'])
+    save_val_set(feature_name, model_name)
+    train(feature_name, model_name, lgb_params)
     save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     
