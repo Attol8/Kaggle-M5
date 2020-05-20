@@ -57,7 +57,9 @@ def join_features(features_l, store_id, is_train=True):
 
     df = pd.concat([df_1, df_2], axis=1)
     df = df.loc[:,~df.columns.duplicated()]
-    df.dropna(inplace = True)
+
+    if is_train: df.dropna(inplace = True)
+
     del df_1
     del df_2
 
@@ -88,9 +90,6 @@ def train(feature_name, model_name, lgb_params):
         print('loading store {0} dataset'.format(store_id))
         train_df = join_features(['best', 'simple'], store_id=store_id)
         train_df, _ = reduce_mem_usage(train_df) 
-        print(f'train shape before drop : {train_df.shape}') #drop nas from dataset
-        train_df.dropna(inplace=True)  
-        print(f'train shape after drop : {train_df.shape}')
 
         #prepare data for lgb
         cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
@@ -137,7 +136,6 @@ def save_metrics(feature_name, model_name):
         store_mask = grid_df['store_id']==store_id
         useless_cols = ['store_id', 'wm_yr_wk', 'state_id','index', 'id', 'date', 'd', 'sales']
         features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
-        print(f'features columns: {features_columns}')
 
         model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
         estimator = pickle.load(open(model_path, 'rb'))
@@ -152,11 +150,48 @@ def save_metrics(feature_name, model_name):
     y_valid, y_pred = valid_data['sales'], grid_df['sales']
     rmse = sqrt(mean_squared_error(y_valid, y_pred)) #change metrics according to the one you use
     print('validation rmse is : {0}'.format(rmse))
+    print(f'features columns: {features_columns}')
     save_score(model_name, feature_name, params= lgb_params, CV_score=rmse)  
 
+    #check for features importance
+    feature_importance(base_rmse= rmse, y_valid= y_valid, valid_data=valid_data, features =features_columns)
     with open(os.path.join(settings.METRIC_DIR, '{0}.{1}.fmap'.format(model_name, feature_name)), 'w') as f:
         for i, col in enumerate(features_columns):
             f.write('{}\t{}\tq\n'.format(i, col))
+
+def feature_importance(base_rmse, y_valid, valid_data, features):
+
+    #set all sales on temporary df to 0
+    for col in features:
+        grid_df = valid_data.copy()
+        grid_df['sales'] = 0
+
+        # Error here appears if we have "categorical" features and can't 
+        # do np.random.permutation without disrupt categories
+        # so we need to check if feature is numerical
+        if grid_df[col].dtypes.name != 'category':
+            grid_df[col] = np.random.permutation(grid_df[col].values)
+            #grid_df['preds'] = test_model.predict(grid_df[features_columns])
+
+        #load model and make predictions on grid_df for each store
+        for store_id in list(range(10)):
+            store_mask = grid_df['store_id']==store_id
+            #useless_cols = ['store_id', 'wm_yr_wk', 'state_id','index', 'id', 'date', 'd', 'sales']
+            #features_columns = grid_df.columns[~grid_df.columns.isin(useless_cols)]
+
+            model_path = os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))
+            estimator = pickle.load(open(model_path, 'rb'))
+
+            grid_df.loc[store_mask, 'sales'] = estimator.predict(grid_df[store_mask][features])
+
+        y_valid, y_pred = valid_data['sales'], grid_df['sales']
+        cur_score = sqrt(mean_squared_error(y_valid, y_pred)) #change metrics according to the one you use
+        
+        # If our current rmse score is less than base score
+        # it means that feature most probably is a bad one
+        # and our model is learning on noise
+        print(col, np.round(cur_score - base_rmse, 4))
+
 
 def predict(feature_name, model_name):
 
@@ -242,9 +277,9 @@ if __name__ == "__main__":
                     'verbose': -1,
                 }
 
-    numbers_check(['best', 'simple'])
-    save_val_set(feature_name, model_name)
-    train(feature_name, model_name, lgb_params)
+    #numbers_check(['best', 'simple'])
+    #save_val_set(feature_name, model_name)
+    #train(feature_name, model_name, lgb_params)
     save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     

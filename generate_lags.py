@@ -29,9 +29,9 @@ def generate_feature(feature_name=feature_name):
     for d_shift in [1, 7 , 14, 28, 30, 60]: 
         print('Shifting period:', d_shift)
         for d_window in [7, 14, 28, 30, 60]:
-            col_name_m = 'rolling_mean_'+str(d_shift)+'_'+str(d_window)
+            col_name_m = 'rmean_'+str(d_shift)+'_'+str(d_window)
             trn_tst[col_name_m] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
-            col_name_s = 'rolling_std_'+str(d_shift)+'_'+str(d_window)
+            col_name_s = 'rmean_'+str(d_shift)+'_'+str(d_window)
             trn_tst[col_name_s] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
 
     date_features = {
