@@ -281,7 +281,7 @@ if __name__ == "__main__":
     save_val_set(feature_name, model_name, features_l=features_l)
     train(feature_name, model_name, lgb_params, features_l=features_l)
     save_metrics(feature_name, model_name)
-    predict(feature_name, model_name)
+    #predict(feature_name, model_name)
     
 
 
