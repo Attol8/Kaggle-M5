@@ -6,39 +6,39 @@ import settings
 import logging
 from utils import reduce_mem_usage
 
-feature_name = "lags3" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
-
-def generate_feature(feature_name=feature_name):
+def generate_feature(feature_name, is_train=True):
     '''creates new features for train and test set then saves them separetely in the correct folder'''
 
-    print('loading raw data')
-    train = pd.read_feather(settings.TRAIN_DATA)
-    #code for taking a sample of the training data (comment if you want fll data set)
-    last_day = datetime.date(2016, 4, 24)
-    P_HORIZON = datetime.timedelta(365)
-    sample_mask = train['date']>str((last_day-P_HORIZON))
-    train = train[sample_mask]
+    #load test and train data
+    print('Load Main Data')
+    if is_train:
+        dt = pd.read_feather(settings.TRAIN_DATA)
+        #code for taking a sample of the training data (comment if you want fll data set)
+        last_day = datetime.date(2016, 4, 24)
+        P_HORIZON = datetime.timedelta(365)
+        sample_mask = dt['date']>str((last_day-P_HORIZON))
+        dt = dt[sample_mask]
+    
+    else:
+        dt = pd.read_feather(settings.TEST_DATA)
 
-    test = pd.read_feather(settings.TEST_DATA)
-
-    trn_tst = train.append(test)
-    print('trn_shape:{}, tst_shape: {}, all shape: {}'.format(train.shape, test.shape, trn_tst.shape))
+    #perform feature engineering
 
     #create lags features
     lags = [7, 14, 28, 56] 
     lags.extend(range(29, 43))
     lag_cols = [f"lag_{lag}" for lag in lags]
     for lag, lag_col in zip(lags, lag_cols):
-        trn_tst[lag_col] = trn_tst[["id","sales"]].groupby("id")["sales"].shift(lag)
+        dt[lag_col] = dt[["id","sales"]].groupby("id")["sales"].shift(lag)
 
     #create rolling windows mean and std features with various day shift
-    for d_shift in [28, 30, 60]: 
+    for d_shift in [28]: 
         print('Shifting period:', d_shift)
-        for d_window in [7, 14, 30, 60, 120,]:
+        for d_window in [7, 14, 30, 60, 120]:
             col_name_m = 'rmean_'+str(d_shift)+'_'+str(d_window)
-            trn_tst[col_name_m] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
+            dt[col_name_m] = dt.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
             col_name_s = 'rmean_'+str(d_shift)+'_'+str(d_window)
-            trn_tst[col_name_s] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
+            dt[col_name_s] = dt.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
 
     date_features = {
         "wday": "weekday",
@@ -50,22 +50,23 @@ def generate_feature(feature_name=feature_name):
     }
 
     for date_feat_name, date_feat_func in date_features.items():
-        if date_feat_name in trn_tst.columns:
-            trn_tst[date_feat_name] = trn_tst[date_feat_name].astype("int16")
+        if date_feat_name in dt.columns:
+            dt[date_feat_name] = dt[date_feat_name].astype("int16")
         else:
-            trn_tst[date_feat_name] = getattr(trn_tst["date"].dt, date_feat_func).astype("int16")
-
-    print(trn_tst[:len(train)].info())
-    print(trn_tst[len(train):].info())        
-
+            dt[date_feat_name] = getattr(dt["date"].dt, date_feat_func).astype("int16")
+  
+    # Final list of features
+    print(dt.info())
     with open(os.path.join(settings.FEATURE_DIR, '{0}.fmap'.format(feature_name)), 'w') as f:
-        for i, col in enumerate(trn_tst.columns):
+        for i, col in enumerate(dt.columns):
             f.write('{}\t{}\tq\n'.format(i, col))
 
-    trn_tst, _ = reduce_mem_usage(trn_tst)
-    logging.info('saving features')
-    trn_tst[:len(train)].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
-    trn_tst[len(train):].to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
-
+    dt, _ = reduce_mem_usage(dt)
+    if is_train:
+        dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
+    else:
+        dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
+        
 if __name__ == "__main__":
-    generate_feature()
+    generate_feature(feature_name = "lags3", is_train=True)
+    generate_feature(feature_name = "lags3", is_train=False)
