@@ -33,47 +33,47 @@ def create_lag_features_for_test(df, day):
     return df
 
 def numbers_check(features_l):
-    df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[0])))
-    df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[1])))
-    df = pd.concat([df_1, df_2], axis=1)
+    df_l =[]
+    for feature in features_l:
+        df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
+        df_l.append(df_curr)
+        print(f'feat shape is : {df_curr.shape}')
+
+    df = pd.concat(df_l, axis=1)
     df = df.loc[:,~df.columns.duplicated()]
-    print(f'feat1 shape is : {df_1.shape}')
-    print(f'feat2 shape is : {df_2.shape}')
     print(f'train shape is : {df.shape}')
 
 def join_features(features_l, store_id, is_train=True):
     if is_train:
-        df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[0])))
-        df_1, _ = reduce_mem_usage(df_1)
-        df_1 = df_1[df_1['store_id'] == store_id]
-
-        df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(features_l[1])))
-        df_2, _ = reduce_mem_usage(df_2)
-        df_2 = df_2[df_2['store_id'] == store_id]
+        df_l =[]
+        for feature in features_l:
+            df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
+            df_curr, _ = reduce_mem_usage(df_curr)
+            df_curr = df_curr[df_curr['store_id'] == store_id]
+            df_l.append(df_curr)
     
     else:
-        df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(features_l[0])))
-        df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(features_l[1])))
+        df_l =[]
+        for feature in features_l:
+            df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature)))
+            df_l.append(df_curr)
 
-    df = pd.concat([df_1, df_2], axis=1)
+    df = pd.concat(df_l, axis=1)
     df = df.loc[:,~df.columns.duplicated()]
 
     if is_train: df.dropna(inplace = True)
 
-    del df_1
-    del df_2
-
     return df
 
-def save_val_set(feature_name, model_name):
+def save_val_set(feature_name, model_name, features_l):
+    df_l =[]
+    for feature in features_l:
+        df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
+        df_curr, _ = reduce_mem_usage(df_curr)
+        df_l.append(df_curr)
 
-    df_1 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('best')))
-    df_2 = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format('simple')))
-    train_df = pd.concat([df_1, df_2], axis=1)
+    train_df = pd.concat(df_l, axis=1)
     train_df = train_df.loc[:,~train_df.columns.duplicated()]
-
-    del df_1
-    del df_2
 
     last_day = datetime.date(2016, 4, 24)
     P_HORIZON = datetime.timedelta(28)
@@ -83,12 +83,12 @@ def save_val_set(feature_name, model_name):
     print(f'validation set shape is : {X_val.shape}')
     X_val.to_csv(os.path.join(settings.VAL_DIR, 'val.{0}.{1}.csv'.format(model_name, feature_name)), index=False)
 
-def train(feature_name, model_name, lgb_params):
+def train(feature_name, model_name, lgb_params, features_l):
 
     for store_id in list(range(10)):   #stores are encoded
         print('\n')
         print('loading store {0} dataset'.format(store_id))
-        train_df = join_features(['best', 'simple'], store_id=store_id)
+        train_df = join_features(features_l, store_id=store_id)
         train_df, _ = reduce_mem_usage(train_df) 
 
         #prepare data for lgb
@@ -253,7 +253,7 @@ def predict(feature_name, model_name):
 
 if __name__ == "__main__":
     
-    feature_name = "best+simple" 
+    feature_name = "best+simple+lags" 
     model_name = 'lgbm5gap'
     lgb_params = {
                     'boosting_type': 'gbdt',
@@ -276,10 +276,10 @@ if __name__ == "__main__":
                     'boost_from_average': False,
                     'verbose': -1,
                 }
-
-    #numbers_check(['best', 'simple'])
-    #save_val_set(feature_name, model_name)
-    #train(feature_name, model_name, lgb_params)
+    features_l = ['best', 'simple', 'lags3']
+    numbers_check(features_l)
+    save_val_set(feature_name, model_name, features_l=features_l)
+    train(feature_name, model_name, lgb_params, features_l=features_l)
     save_metrics(feature_name, model_name)
     predict(feature_name, model_name)
     

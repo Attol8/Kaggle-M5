@@ -6,29 +6,35 @@ import settings
 import logging
 from utils import reduce_mem_usage
 
-feature_name = "lags2" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
+feature_name = "lags3" #inspired from https://www.kaggle.com/poedator/m5-under-0-50-optimized
 
 def generate_feature(feature_name=feature_name):
     '''creates new features for train and test set then saves them separetely in the correct folder'''
 
     print('loading raw data')
     train = pd.read_feather(settings.TRAIN_DATA)
+    #code for taking a sample of the training data (comment if you want fll data set)
+    last_day = datetime.date(2016, 4, 24)
+    P_HORIZON = datetime.timedelta(365)
+    sample_mask = train['date']>str((last_day-P_HORIZON))
+    train = train[sample_mask]
+
     test = pd.read_feather(settings.TEST_DATA)
 
     trn_tst = train.append(test)
     print('trn_shape:{}, tst_shape: {}, all shape: {}'.format(train.shape, test.shape, trn_tst.shape))
 
     #create lags features
-    lags = [7, 14, 28] 
+    lags = [7, 14, 28, 56] 
     lags.extend(range(29, 43))
     lag_cols = [f"lag_{lag}" for lag in lags]
     for lag, lag_col in zip(lags, lag_cols):
         trn_tst[lag_col] = trn_tst[["id","sales"]].groupby("id")["sales"].shift(lag)
 
     #create rolling windows mean and std features with various day shift
-    for d_shift in [1, 7 , 14, 28, 30, 60]: 
+    for d_shift in [28, 30, 60]: 
         print('Shifting period:', d_shift)
-        for d_window in [7, 14, 28, 30, 60]:
+        for d_window in [7, 14, 30, 60, 120,]:
             col_name_m = 'rmean_'+str(d_shift)+'_'+str(d_window)
             trn_tst[col_name_m] = trn_tst.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
             col_name_s = 'rmean_'+str(d_shift)+'_'+str(d_window)
