@@ -39,6 +39,9 @@ def generate_feature(feature_name, is_train=True):
             dt[col_name_m] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
             col_name_s = 'rmean_'+str(d_shift)+'_'+str(d_window)
             dt[col_name_s] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
+            col_name_max = 'max_sales_'+str(d_shift)+'_'+str(d_window)
+            dt[col_name_max] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).max()).astype(np.float16)
+
 
     date_features = {
         "wday": "weekday",

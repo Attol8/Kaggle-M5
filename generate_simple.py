@@ -102,14 +102,14 @@ def generate_feature(feature_name, is_train = True):
     print('Prices')
 
     # We can do some basic aggregations
-    #prices_df['price_max'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('max')
+    prices_df['price_max'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('max')
     prices_df['price_min'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('min')
     prices_df['price_std'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('std')
     prices_df['price_mean'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('mean')
 
     # and do price normalization (min/max scaling)
     prices_df['price_norm'] = prices_df['sell_price']/prices_df['price_max']
-
+    prices_df.drop('price_max', axis=1, inplace=True)
     # Some items are can be inflation dependent
     # and some items are very "stable"
     prices_df['price_nunique'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('nunique')
