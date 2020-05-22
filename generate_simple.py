@@ -137,7 +137,7 @@ def generate_feature(feature_name, is_train = True):
     print('Merge prices')
 
     # Merge Prices
-    original_columns = list(dt)
+    dt = dt.loc[:,~dt.columns.duplicated()]
     dt = dt.merge(prices_df, on=['store_id','item_id','wm_yr_wk'], how='left')
     #keep_columns = [col for col in list(dt) if col not in original_columns]
     #dt = dt[MAIN_INDEX+keep_columns]
