@@ -25,20 +25,20 @@ def generate_feature(feature_name, is_train=True):
     #perform feature engineering
 
     #create lags features
-    lags = [7, 14, 28, 56] 
-    lags.extend(range(29, 43))
+    lags = [7, 14, 28, 40] 
+    lags.extend(range(29, 36))
     lag_cols = [f"lag_{lag}" for lag in lags]
     for lag, lag_col in zip(lags, lag_cols):
         dt[lag_col] = dt[["id","sales"]].groupby("id")["sales"].shift(lag)
 
     #create rolling windows mean and std features with various day shift
-    for d_shift in [28]: 
+    for d_shift in [7, 14, 28]: 
         print('Shifting period:', d_shift)
         for d_window in [7, 14, 30, 60, 120]:
             col_name_m = 'rmean_'+str(d_shift)+'_'+str(d_window)
-            dt[col_name_m] = dt.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
+            dt[col_name_m] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
             col_name_s = 'rmean_'+str(d_shift)+'_'+str(d_window)
-            dt[col_name_s] = dt.groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
+            dt[col_name_s] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
 
     date_features = {
         "wday": "weekday",

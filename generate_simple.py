@@ -102,7 +102,7 @@ def generate_feature(feature_name, is_train = True):
     print('Prices')
 
     # We can do some basic aggregations
-    prices_df['price_max'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('max')
+    #prices_df['price_max'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('max')
     prices_df['price_min'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('min')
     prices_df['price_std'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('std')
     prices_df['price_mean'] = prices_df.groupby(['store_id','item_id'])['sell_price'].transform('mean')
