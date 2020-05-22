@@ -65,6 +65,8 @@ def generate_feature(feature_name, is_train=True):
             f.write('{}\t{}\tq\n'.format(i, col))
 
     dt, _ = reduce_mem_usage(dt)
+    dt = dt.astype('float32', errors='ignore')
+    
     if is_train:
         dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature_name)))
     else:
