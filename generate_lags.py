@@ -37,7 +37,7 @@ def generate_feature(feature_name, is_train=True):
         for d_window in [7, 14, 30, 60, 120]:
             col_name_m = 'rmean_'+str(d_shift)+'_'+str(d_window)
             dt[col_name_m] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).mean()).astype(np.float16)
-            col_name_s = 'rmean_'+str(d_shift)+'_'+str(d_window)
+            col_name_s = 'smean_'+str(d_shift)+'_'+str(d_window)
             dt[col_name_s] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).std()).astype(np.float16)
             col_name_max = 'max_sales_'+str(d_shift)+'_'+str(d_window)
             dt[col_name_max] = dt[["id","sales"]].groupby(['id'])["sales"].transform(lambda x: x.shift(d_shift).rolling(d_window).max()).astype(np.float16)
