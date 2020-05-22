@@ -27,9 +27,11 @@ def generate_feature(feature_name, is_train = True):
         P_HORIZON = datetime.timedelta(365)
         sample_mask = dt['date']>str((last_day-P_HORIZON))
         dt = dt[sample_mask]
+        dt =dt[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd','sales']]
     
     else:
         dt = pd.read_feather(settings.TEST_DATA)
+        dt =dt[['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd','sales']]
 
     #perform feature engineering
 
@@ -176,6 +178,7 @@ def generate_feature(feature_name, is_train = True):
             'snap_CA',
             'snap_TX',
             'snap_WI']
+            
     for col in icols:
         dt[col] = dt[col].astype('category')
 
