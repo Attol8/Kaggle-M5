@@ -23,9 +23,9 @@ def create_lag_features_for_test(df, day):
         df.loc[df.d == day, lag_col] = \
         df.loc[df.d == day-lag, 'sales'].values
 
-    wins = [7, 14, 28]
+    wins = [7, 14, 30, 60, 120]
     for window in wins :
-        for shift in [7, 14, 30, 60, 120]:
+        for shift in [7, 14, 28]:
             df_window = df[(df.d <= day-shift) & (df.d > day-(shift+window))] #filter for date <= day-shift and date > day-(shift+window)
             #mean
             df_window_grouped = df_window.groupby("id").agg({'sales':'mean'}).reindex(df.loc[df.d == day,'id'])
