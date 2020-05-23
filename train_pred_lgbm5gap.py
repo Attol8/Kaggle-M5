@@ -121,6 +121,7 @@ def train(feature_name, model_name, lgb_params, features_l, features_selection=T
             train_inds = np.setdiff1d(train_df.index.values, fake_valid_inds)
             X_train, y_train = train_df.loc[train_inds][features_columns], train_df.loc[train_inds]['sales']
             X_valid, y_valid = train_df.loc[fake_valid_inds][features_columns], train_df[fake_valid_inds]['sales']
+            print(f'validation set shape is : {X_valid.shape}')
    
         del train_df; gc.collect()
 
