@@ -17,19 +17,29 @@ def create_lag_features_for_test(df, day):
     print(f'creating lag and windows feature for day {day}')
     #create lags features
 
-    lags = [7, 28]
+    lags = [7, 14, 28, 40] 
     lag_cols = [f"lag_{lag}" for lag in lags]
     for lag, lag_col in zip(lags, lag_cols):
         df.loc[df.d == day, lag_col] = \
         df.loc[df.d == day-lag, 'sales'].values
 
-    wins = [7, 28]
+    wins = [7, 14, 28]
     for window in wins :
-        for shift in lags:
-            df_window = df[(df.d <= day-shift) & (df.d > day-(shift+window))] #filter for date <= day-shift and date > 
+        for shift in [7, 14, 30, 60, 120]:
+            df_window = df[(df.d <= day-shift) & (df.d > day-(shift+window))] #filter for date <= day-shift and date > day-(shift+window)
+            #mean
             df_window_grouped = df_window.groupby("id").agg({'sales':'mean'}).reindex(df.loc[df.d == day,'id'])
             df.loc[df.d == day,f"rmean_{shift}_{window}"] = \
                 df_window_grouped.sales.values
+            #std
+            df_window_grouped = df_window.groupby("id").agg({'sales':'std'}).reindex(df.loc[df.d == day,'id'])
+            df.loc[df.d == day,f"smean_{shift}_{window}"] = \
+                df_window_grouped.sales.values
+            #max sales
+            df_window_grouped = df_window.groupby("id").agg({'sales':'max'}).reindex(df.loc[df.d == day,'id'])
+            df.loc[df.d == day,f"max_sales_{shift}_{window}"] = \
+                df_window_grouped.sales.values
+
     return df
 
 def numbers_check(features_l):
@@ -83,7 +93,7 @@ def save_val_set(feature_name, model_name, features_l):
     print(f'validation set shape is : {X_val.shape}')
     X_val.to_csv(os.path.join(settings.VAL_DIR, 'val.{0}.{1}.csv'.format(model_name, feature_name)), index=False)
 
-def train(feature_name, model_name, lgb_params, features_l):
+def train(feature_name, model_name, lgb_params, features_l, features_selection=True):
 
     for store_id in list(range(10)):   #stores are encoded
         print('\n')
@@ -95,15 +105,23 @@ def train(feature_name, model_name, lgb_params, features_l):
         cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
         useless_cols = ['store_id',  'wm_yr_wk', 'state_id','index', 'id', 'date', "d", "sales"]
         features_columns = train_df.columns[~train_df.columns.isin(useless_cols)]
-
-        last_day = datetime.date(2016, 4, 24)
-        P_HORIZON = datetime.timedelta(28)
-        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
-        train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
-
-        X_train, y_train = train_df[train_mask][features_columns], train_df[train_mask]['sales']
-        X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']
         
+        if features_selection:
+            last_day = datetime.date(2016, 4, 24)
+            P_HORIZON = datetime.timedelta(28)
+            valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
+            train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
+            X_train, y_train = train_df[train_mask][features_columns], train_df[train_mask]['sales']
+            X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']        
+
+        else:
+            np.random.seed(777)
+
+            fake_valid_inds = np.random.choice(train_df.index.values, 2_000_000, replace = False)
+            train_inds = np.setdiff1d(train_df.index.values, fake_valid_inds)
+            X_train, y_train = train_df.loc[train_inds][features_columns], train_df.loc[train_inds]['sales']
+            X_valid, y_valid = train_df.loc[fake_valid_inds][features_columns], train_df[fake_valid_inds]['sales']
+   
         del train_df; gc.collect()
 
         train_data = lgb.Dataset(X_train, label= y_train, categorical_feature=cat_feats, free_raw_data=False)
@@ -193,13 +211,13 @@ def feature_importance(base_rmse, y_valid, valid_data, features):
         print(col, np.round(cur_score - base_rmse, 4))
 
 
-def predict(feature_name, model_name):
+def predict(feature_name, model_name, features_l):
 
     print('initiating prediction dataframe...')
     all_preds = pd.DataFrame() # Create Dummy DataFrame to store predictions
 
     #load initial test set
-    X_tst = join_features(['best', 'simple'], 0, is_train=False)
+    X_tst = join_features(features_l, 0, is_train=False) #0 because we are merging the whole dataset not by store
     X_tst['d'] = X_tst['d'].str[-4:]
     X_tst['d'] = X_tst['d'].astype('float32')
     last_day_n = 1913
@@ -262,26 +280,23 @@ if __name__ == "__main__":
                     'is_training_metric': True,
                     'metric': 'rmse',
                     'subsample': 0.5,
-                    'bagging_fraction' : 0.9411,
                     'subsample_freq': 1,
                     'learning_rate': 0.03,
-                    'num_leaves': 1574,
+                    'num_leaves': 2**11-1,
                     'min_data_in_leaf': 2**12-1,
-                    'feature_fraction':  0.4381,
-                    'max_bin': 12,
-                    'max_depth' : 23,
-                    'min_child_weight' : 17,
-                    'min_split_gain' : 0.0184,
+                    'feature_fraction': 0.5,
+                    'max_bin': 100,
                     'n_estimators': 1300,
                     'boost_from_average': False,
                     'verbose': -1,
                 }
+
     features_l = ['best', 'simple', 'lags3']
     numbers_check(features_l)
-    save_val_set(feature_name, model_name, features_l=features_l)
-    train(feature_name, model_name, lgb_params, features_l=features_l)
-    save_metrics(feature_name, model_name)
-    #predict(feature_name, model_name)
+    #save_val_set(feature_name, model_name, features_l=features_l)
+    train(feature_name, model_name, lgb_params, features_l=features_l, features_selection=False)
+    #save_metrics(feature_name, model_name) #uncomment when running features tests
+    predict(feature_name, model_name, features_l=features_l)
     
 
 

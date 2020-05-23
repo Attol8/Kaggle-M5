@@ -18,7 +18,7 @@ def make_out_directories(output_path = settings.OUTPUT_DIR):
         else:
             os.mkdir(os.path.join(output_path, dir))
 
-def make_test_train(is_train = True, nrows = None, first_day = 1500):
+def make_test_train(is_train = True, nrows = None, first_day = 1050):
     #categories' types
     CAL_DTYPES={"event_name_1": "category", "event_name_2": "category", "event_type_1": "category", 
     "event_type_2": "category", "weekday": "category", 'wm_yr_wk': 'int16', "wday": "int16",

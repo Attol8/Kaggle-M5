@@ -16,10 +16,10 @@ def generate_feature(feature_name, is_train=True):
         dt = pd.read_feather(settings.TRAIN_DATA)
 
         #code for taking a sample of the training data (comment if you want full data set)
-        last_day = datetime.date(2016, 4, 24)
-        P_HORIZON = datetime.timedelta(365)
-        sample_mask = dt['date']>str((last_day-P_HORIZON))
-        dt = dt[sample_mask]
+        # last_day = datetime.date(2016, 4, 24)
+        # P_HORIZON = datetime.timedelta(365)
+        # sample_mask = dt['date']>str((last_day-P_HORIZON))
+        # dt = dt[sample_mask]
 
     else:
         dt = pd.read_feather(settings.TEST_DATA)
