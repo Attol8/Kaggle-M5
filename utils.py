@@ -24,7 +24,7 @@ def make_test_train(is_train = True, nrows = None, first_day = 1050):
     "event_type_2": "category", "weekday": "category", 'wm_yr_wk': 'int16', "wday": "int16",
     "month": "int16", "year": "int16", "snap_CA": "float32", 'snap_TX': 'float32', 'snap_WI': 'float32' }
     PRICE_DTYPES = {"store_id": "category", "item_id": "category", "wm_yr_wk": "int16","sell_price":"float32" }
-    max_lags = 57
+    max_lags = 160
     tr_last = 1913
     prices = pd.read_csv(settings.PRICES_DATA, dtype = PRICE_DTYPES)
     for col, col_dtype in PRICE_DTYPES.items():
