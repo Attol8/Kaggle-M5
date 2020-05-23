@@ -35,7 +35,7 @@ def generate_feature(feature_name, is_train=True):
     #create rolling windows mean and std features with various day shift
 
     for d_window in [7, 14, 30, 60, 120]:
-        print(print('Shifting window:', d_window))
+        print('Shifting window:', d_window)
         dt['temp_m'] = dt[["id","sales"]].groupby("id")["sales"].transform(lambda x: x.rolling(d_window).mean()).astype(np.float16)
         dt['temp_s'] = dt[["id","sales"]].groupby("id")["sales"].transform(lambda x: x.rolling(d_window).std()).astype(np.float16)
         dt['temp_max'] = dt[["id","sales"]].groupby("id")["sales"].transform(lambda x: x.rolling(d_window).max()).astype(np.float16)
@@ -47,6 +47,9 @@ def generate_feature(feature_name, is_train=True):
             dt[col_name_s] = dt[["id", 'temp_s']].groupby(['id'])['temp_s'].shift(d_shift)
             col_name_max = 'max_sales_'+str(d_shift)+'_'+str(d_window)
             dt[col_name_max] = dt[["id", 'temp_max']].groupby(['id'])['temp_max'].shift(d_shift)    
+
+        columns = ['temp_m', 'temp_s', 'temp_max']
+        dt.drop(columns, inplace=True, axis=1)
 
     date_features = {
         "wday": "weekday",
