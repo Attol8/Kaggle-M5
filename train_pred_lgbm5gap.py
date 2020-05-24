@@ -120,7 +120,7 @@ def train(feature_name, model_name, lgb_params, features_l, features_selection=T
 
         else:
             np.random.seed(777)
-            fake_valid_inds = np.random.choice(train_df.index.values, len(X_train)/20 , replace = False)
+            fake_valid_inds = np.random.choice(train_df.index.values, len(train_df)/20 , replace = False)
             train_inds = np.setdiff1d(train_df.index.values, fake_valid_inds)
             X_train, y_train = train_df.loc[train_inds][features_columns], train_df.loc[train_inds]['sales']
             X_valid, y_valid = train_df.loc[fake_valid_inds][features_columns], train_df.loc[fake_valid_inds]['sales']
