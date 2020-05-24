@@ -78,18 +78,18 @@ def generate_feature(feature_name, is_train=True):
             #for i, col in enumerate(dt.columns):
                 #f.write('{}\t{}\tq\n'.format(i, col))
 
-        dt, _ = reduce_mem_usage(dt)
-        dt = dt.astype('float32', errors='ignore')
-        
         if is_train:
+            dt, _ = reduce_mem_usage(dt)
+            dt = dt.astype('float32', errors='ignore')
             dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.{1}.trn.feather'.format(feature_name, store_id)))
         else:
+            dt = dt.astype('float32', errors='ignore')
             test_l.append(dt)
         
-        if len(test_l) !=0:
-            dt = pd.concat(test_l, axis=0)
-            dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
+    if len(test_l) !=0:
+        dt = pd.concat(test_l, axis=0)
+        dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
 if __name__ == "__main__":
-    generate_feature(feature_name = "lags3", is_train=True)
+    #generate_feature(feature_name = "lags3", is_train=True)
     generate_feature(feature_name = "lags3", is_train=False)
