@@ -53,7 +53,7 @@ def generate_feature(feature_name, is_train=True):
                 col_name_max = 'max_sales_'+str(d_shift)+'_'+str(d_window)
                 dt[col_name_max] = dt[["id", 'temp_max']].groupby(['id'])['temp_max'].shift(d_shift)    
 
-            dt, _ = reduce_mem_usage(dt)
+            #dt, _ = reduce_mem_usage(dt)
             columns = ['temp_m', 'temp_s', 'temp_max']
             dt.drop(columns, inplace=True, axis=1)
 
