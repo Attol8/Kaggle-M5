@@ -57,10 +57,14 @@ def join_features(features_l, store_id, is_train=True):
     if is_train:
         df_l =[]
         for feature in features_l:
-            df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
-            df_curr, _ = reduce_mem_usage(df_curr)
-            df_curr = df_curr[df_curr['store_id'] == store_id]
-            df_l.append(df_curr)
+            if feature == 'lags3':
+                df_curr =  pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.{1}.trn.feather'.format(feature_name, store_id)))
+                df_l.append(df_curr)
+            else:
+                df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
+                df_curr, _ = reduce_mem_usage(df_curr)
+                df_curr = df_curr[df_curr['store_id'] == store_id]
+                df_l.append(df_curr)
     
     else:
         df_l =[]
