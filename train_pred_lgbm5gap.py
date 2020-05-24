@@ -9,7 +9,7 @@ import os
 import gc
 import settings
 from sklearn.metrics import mean_squared_error
-from math import sqrt
+from math import sqrt, floor
 from utils import save_score, reduce_mem_usage
 
 
@@ -122,7 +122,7 @@ def train(feature_name, model_name, lgb_params, features_l, features_selection=T
 
         else:
             np.random.seed(777)
-            idx_len = 0.2 * train_df.shape[0]
+            idx_len = math.floor(0.2 * train_df.shape[0])
             print(idx_len)
             fake_valid_inds = np.random.choice(train_df.index.values, idx_len , replace = False)
             train_inds = np.setdiff1d(train_df.index.values, fake_valid_inds)
