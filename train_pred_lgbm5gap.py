@@ -243,7 +243,7 @@ def predict(feature_name, model_name, features_l):
         grid_df = create_lag_features_for_test(grid_df, day)
         print(grid_df.isnull().any())
         print(f'missing columns {[x for x in grid_df.columns if x not in X_tst.columns]}')
-        print(f'missing values total {grid_df[grid_df.d == day].isnull().sum().sum()}')
+        print(f'missing values total {grid_df[grid_df.d == day].isnull().sum()}')
         #print(f'columns with missing values: {grid_df.columns[grid_df.isnull().any()].tolist()}')
 
         for store_id in list(range(10)):
