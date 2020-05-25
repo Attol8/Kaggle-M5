@@ -84,7 +84,7 @@ def join_features(features_l, store_id, is_train=True):
     df = pd.concat(df_l, axis=1)
     df = df.loc[:,~df.columns.duplicated()]
 
-    if is_train: df.dropna(inplace = True)
+    #if is_train: df.dropna(inplace = True)
 
     return df
 
