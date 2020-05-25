@@ -310,10 +310,10 @@ if __name__ == "__main__":
 
     features_l = ['best', 'simple', 'lags3']
     #numbers_check(features_l)
-    save_val_set(feature_name, model_name, features_l=features_l)
+    #save_val_set(feature_name, model_name, features_l=features_l)
     train(feature_name, model_name, lgb_params, features_l=features_l, features_selection=True)
-    save_metrics(feature_name, model_name) #uncomment when running features tests
-    #predict(feature_name, model_name, features_l=features_l)
+    #save_metrics(feature_name, model_name) #uncomment when running features tests
+    predict(feature_name, model_name, features_l=features_l)
     
 
 
