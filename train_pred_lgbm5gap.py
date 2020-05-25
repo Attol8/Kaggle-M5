@@ -19,6 +19,7 @@ def create_lag_features_for_test(df, day):
     #create lags features
 
     lags = [7, 14, 28, 40] 
+    lags.extend(range(29, 36))
     lag_cols = [f"lag_{lag}" for lag in lags]
     for lag, lag_col in zip(lags, lag_cols):
         df.loc[df.d == day, lag_col] = \
@@ -41,6 +42,11 @@ def create_lag_features_for_test(df, day):
             df.loc[df.d == day,f"max_sales_{shift}_{window}"] = \
                 df_window_grouped.sales.values
 
+    df_window = df[(df.d <= day-7) & (df.d > day-(7+28))] #filter for date <= day-shift and date > day-(shift+window)
+    #mean
+    df_window_grouped = df_window.groupby("id").agg({'sales':'mean'}).reindex(df.loc[df.d == day,'id'])
+    df.loc[df.d == day,f"rmean_{7}_{28}"] = \
+        df_window_grouped.sales.values
     return df
 
 def numbers_check(features_l):
