@@ -67,13 +67,12 @@ def join_features(features_l, store_id, is_train=True):
             if feature == 'lags3':
                 df_curr =  pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.{1}.trn.feather'.format(feature, store_id)))
                 df_l.append(df_curr)
-                print(df_curr.shape)
             else:
                 df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
                 df_curr, _ = reduce_mem_usage(df_curr)
                 df_curr = df_curr[df_curr['store_id'] == store_id]
                 df_l.append(df_curr)
-                print(df_curr.shape)
+
 
     else:
         df_l =[]
@@ -82,6 +81,7 @@ def join_features(features_l, store_id, is_train=True):
             df_l.append(df_curr)
 
     df = pd.concat(df_l, axis=1)
+    print(f'df final shape {df.shape}')
     df = df.loc[:,~df.columns.duplicated()]
 
     #if is_train: df.dropna(inplace = True)
