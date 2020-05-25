@@ -98,7 +98,7 @@ def save_val_set(feature_name, model_name, features_l):
         P_HORIZON = datetime.timedelta(28)
         valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation strategy rn 
         X_val_store = train_df[valid_mask]
-        print(f'columns with nas {X_val_store.columns.isna().any().tolist()}')
+        print(f'columns with nas {X_val_store.columns[X_val_store.isna().any()].tolist()}')
         #print(X_val_store.head())
         val_l.append(X_val_store)
     
