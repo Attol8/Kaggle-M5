@@ -94,6 +94,7 @@ def save_val_set(feature_name, model_name, features_l):
     #get validation set
     for store_id in list(range(10)):
         train_df = join_features(features_l, store_id)
+        print(max(train_df.date))
         last_day = datetime.date(2016, 4, 24)
         P_HORIZON = datetime.timedelta(28)
         valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation strategy rn 
