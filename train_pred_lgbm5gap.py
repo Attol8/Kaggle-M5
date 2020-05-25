@@ -60,7 +60,7 @@ def numbers_check(features_l):
     df = df.loc[:,~df.columns.duplicated()]
     print(f'train shape is : {df.shape}')
 
-def join_features(features_l, store_id, is_train=True, is_val=False):
+def join_features(features_l, store_id, is_train=True):
     if is_train:
         df_l =[]
         for feature in features_l:
@@ -96,8 +96,9 @@ def save_val_set(feature_name, model_name, features_l):
         train_df = join_features(features_l, store_id)
         last_day = datetime.date(2016, 4, 24)
         P_HORIZON = datetime.timedelta(28)
-        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
+        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation strategy rn 
         X_val_store = train_df[valid_mask]
+        print(X_val_store.head())
         val_l.append(X_val_store)
     
     X_val = pd.concat(val_l, axis=0)
