@@ -60,7 +60,7 @@ def numbers_check(features_l):
     df = df.loc[:,~df.columns.duplicated()]
     print(f'train shape is : {df.shape}')
 
-def join_features(features_l, store_id, is_train=True):
+def join_features(features_l, store_id, is_train=True, is_val=False):
     if is_train:
         df_l =[]
         for feature in features_l:
@@ -74,7 +74,7 @@ def join_features(features_l, store_id, is_train=True):
                 df_curr = df_curr[df_curr['store_id'] == store_id]
                 df_l.append(df_curr)
                 print(df_curr.shape)
-    
+
     else:
         df_l =[]
         for feature in features_l:
@@ -89,19 +89,18 @@ def join_features(features_l, store_id, is_train=True):
     return df
 
 def save_val_set(feature_name, model_name, features_l):
-    df_l =[]
-    for feature in features_l:
-        df_curr = pd.read_feather(os.path.join(settings.FEATURE_DIR, '{0}.trn.feather'.format(feature)))
-        df_curr, _ = reduce_mem_usage(df_curr)
-        df_l.append(df_curr)
 
-    train_df = pd.concat(df_l, axis=1)
-    train_df = train_df.loc[:,~train_df.columns.duplicated()]
-
-    last_day = datetime.date(2016, 4, 24)
-    P_HORIZON = datetime.timedelta(28)
-    valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
-    X_val = train_df[valid_mask]
+    val_l = []
+    #get validation set
+    for store_id in list(range(10)):
+        train_df = join_features(features_l, store_id)
+        last_day = datetime.date(2016, 4, 24)
+        P_HORIZON = datetime.timedelta(28)
+        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn 
+        X_val_store = train_df[valid_mask]
+        val_l.append(X_val_store)
+    
+    X_val = pd.concat(val_l, axis=0)
     print('saving validation set')
     print(f'validation set shape is : {X_val.shape}')
     X_val.to_csv(os.path.join(settings.VAL_DIR, 'val.{0}.{1}.csv'.format(model_name, feature_name)), index=False)
@@ -308,10 +307,10 @@ if __name__ == "__main__":
 
     features_l = ['best', 'simple', 'lags3']
     #numbers_check(features_l)
-    #save_val_set(feature_name, model_name, features_l=features_l)
-    #train(feature_name, model_name, lgb_params, features_l=features_l, features_selection=False)
-    #save_metrics(feature_name, model_name) #uncomment when running features tests
-    predict(feature_name, model_name, features_l=features_l)
+    save_val_set(feature_name, model_name, features_l=features_l)
+    train(feature_name, model_name, lgb_params, features_l=features_l, features_selection=True)
+    save_metrics(feature_name, model_name) #uncomment when running features tests
+    #predict(feature_name, model_name, features_l=features_l)
     
 
 
