@@ -110,35 +110,39 @@ def save_val_set(feature_name, model_name, features_l):
 
 def train(feature_name, model_name, lgb_params, features_l, features_selection=True):
 
-    for store_id in list(range(10)):   #stores are encoded
-        print('\n')
-        print('loading store {0} dataset'.format(store_id))
-        train_df = join_features(features_l, store_id=store_id)
-        train_df, _ = reduce_mem_usage(train_df) 
+    for store_id in list(range(10)): 
+        if os.path.exists(os.path.join(settings.MODEL_DIR, '{0}.{1}.{2}.bin'.format(model_name, feature_name, store_id))) == False:
+            break
 
-        #prepare data for lgb
-        cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
-        useless_cols = ['store_id',  'wm_yr_wk', 'state_id','index', 'id', 'date', "d", "sales"]
-        features_columns = train_df.columns[~train_df.columns.isin(useless_cols)]
-        
-        if features_selection:
-            last_day = datetime.date(2016, 4, 24)
-            P_HORIZON = datetime.timedelta(28)
-            valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
-            train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
-            X_train, y_train = train_df[train_mask][features_columns], train_df[train_mask]['sales']
-            X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']        
+    #stores are encoded
+    print('\n')
+    print('loading store {0} dataset'.format(store_id))
+    train_df = join_features(features_l, store_id=store_id)
+    train_df, _ = reduce_mem_usage(train_df) 
 
-        else:
-            np.random.seed(777)
-            idx_len = math.floor(0.2 * train_df.shape[0])
-            print(idx_len)
-            fake_valid_inds = np.random.choice(train_df.index.values, idx_len , replace = False)
-            train_inds = np.setdiff1d(train_df.index.values, fake_valid_inds)
-            X_train, y_train = train_df.loc[train_inds][features_columns], train_df.loc[train_inds]['sales']
-            X_valid, y_valid = train_df.loc[fake_valid_inds][features_columns], train_df.loc[fake_valid_inds]['sales']
-            print(f'validation set shape is : {X_valid.shape}')
-   
+    #prepare data for lgb
+    cat_feats = ['item_id', 'dept_id', 'cat_id'] + ["event_name_1", "event_name_2", "event_type_1", "event_type_2"]
+    useless_cols = ['store_id',  'wm_yr_wk', 'state_id','index', 'id', 'date', "d", "sales"]
+    features_columns = train_df.columns[~train_df.columns.isin(useless_cols)]
+    
+    if features_selection:
+        last_day = datetime.date(2016, 4, 24)
+        P_HORIZON = datetime.timedelta(28)
+        valid_mask = train_df['date']>str((last_day-P_HORIZON)) #mask for validation set, it is our validation  strategy rn
+        train_mask = train_df['date']<str((last_day-2*P_HORIZON)) #introduce gap in training (28 days)
+        X_train, y_train = train_df[train_mask][features_columns], train_df[train_mask]['sales']
+        X_valid, y_valid = train_df[valid_mask][features_columns], train_df[valid_mask]['sales']        
+
+    else:
+        np.random.seed(777)
+        idx_len = math.floor(0.2 * train_df.shape[0])
+        print(idx_len)
+        fake_valid_inds = np.random.choice(train_df.index.values, idx_len , replace = False)
+        train_inds = np.setdiff1d(train_df.index.values, fake_valid_inds)
+        X_train, y_train = train_df.loc[train_inds][features_columns], train_df.loc[train_inds]['sales']
+        X_valid, y_valid = train_df.loc[fake_valid_inds][features_columns], train_df.loc[fake_valid_inds]['sales']
+        print(f'validation set shape is : {X_valid.shape}')
+
         del train_df; gc.collect()
 
         train_data = lgb.Dataset(X_train, label= y_train, categorical_feature=cat_feats, free_raw_data=False)
@@ -313,7 +317,7 @@ if __name__ == "__main__":
     #save_val_set(feature_name, model_name, features_l=features_l)
     train(feature_name, model_name, lgb_params, features_l=features_l, features_selection=False)
     #save_metrics(feature_name, model_name) #uncomment when running features tests
-    predict(feature_name, model_name, features_l=features_l)
+    #predict(feature_name, model_name, features_l=features_l)
     
 
 
