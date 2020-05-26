@@ -91,5 +91,5 @@ def generate_feature(feature_name, is_train=True):
         dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
 if __name__ == "__main__":
-    generate_feature(feature_name = "lags3", is_train=True)
-    #generate_feature(feature_name = "lags3", is_train=False)
+    #generate_feature(feature_name = "lags3", is_train=True)
+    generate_feature(feature_name = "lags3", is_train=False)
