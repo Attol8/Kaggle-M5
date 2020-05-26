@@ -92,4 +92,4 @@ def generate_feature(feature_name, is_train=True):
 
 if __name__ == "__main__":
     generate_feature(feature_name = "lags3", is_train=True)
-    generate_feature(feature_name = "lags3", is_train=False)
+    #generate_feature(feature_name = "lags3", is_train=False)
