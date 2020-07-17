@@ -15,10 +15,10 @@ def generate_feature(feature_name, is_train=True):
         grid_df = pd.read_feather(settings.TRAIN_DATA)
 
         #code for taking a sample of the training data (comment if you want fll data set)
-        # last_day = datetime.date(2016, 4, 24)
-        # P_HORIZON = datetime.timedelta(365)
-        # sample_mask = dt['date']>str((last_day-P_HORIZON))
-        # dt = dt[sample_mask]
+        last_day = datetime.date(2016, 4, 24)
+        P_HORIZON = datetime.timedelta(420)
+        sample_mask = grid_df['date']>str((last_day-P_HORIZON))
+        grid_df = grid_df[sample_mask]
     
     else:
         grid_df = pd.read_feather(settings.TEST_DATA)
@@ -91,5 +91,5 @@ def generate_feature(feature_name, is_train=True):
         dt.reset_index().to_feather(os.path.join(settings.FEATURE_DIR, '{0}.tst.feather'.format(feature_name)))
 
 if __name__ == "__main__":
-    #generate_feature(feature_name = "lags3", is_train=True)
+    generate_feature(feature_name = "lags3", is_train=True)
     generate_feature(feature_name = "lags3", is_train=False)
